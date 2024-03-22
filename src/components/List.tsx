@@ -10,7 +10,11 @@ function List() {
 
   useEffect(() => {
     axios.get("http://localhost:4000/article").then(({ data }) => {
-      setList(JSON.parse(data.data));
+      setList(
+        JSON.parse(data.data).sort(
+          (a: TList, b: TList) => Date.parse(b.regDate) - Date.parse(a.regDate)
+        )
+      );
     });
   }, []);
 
@@ -67,7 +71,7 @@ function List() {
       {list &&
         list.map((elem: TList) => (
           <div key={elem._id}>
-            {elem.article.user === localStroage.get() && (
+            {elem.user === localStroage.get() && (
               <>
                 <input
                   type="file"
@@ -95,7 +99,7 @@ function List() {
               </>
             )}
             <img
-              src={`data:image/${elem.article.contentType};base64,${elem.article.data}`}
+              src={`data:image/${elem.contentType};base64,${elem.data}`}
               alt="그림 이미지"
             />
           </div>
