@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -8,10 +8,21 @@ import {
   useState,
 } from "react";
 import { LocalStorage } from "../lib/localStorage";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 function AddDrawing() {
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [prevImg, setPrevImg] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationKey: ["article"],
+    mutationFn: (formData: FormData): Promise<AxiosResponse> =>
+      axios.post("http://localhost:4000/article", formData),
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["article"] });
+    },
+  });
 
   const localStorage = new LocalStorage();
 
@@ -40,19 +51,27 @@ function AddDrawing() {
     if (!imgFile) {
       return;
     }
+    if (isPending) {
+      return;
+    }
     const formData = new FormData();
     formData.append("drawingImage", imgFile!);
     formData.append("user", JSON.stringify(localStorage.get()));
 
-    axios
-      .post("http://localhost:4000/article", formData)
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+    mutate(formData);
   };
+
+  if (isPending) {
+    return <>전송 중...</>;
+  }
+
+  if (isError) {
+    return (
+      <>
+        에러가 발생하였습니다 <br /> {error.message}
+      </>
+    );
+  }
   return (
     <div className="w-60">
       <h3 className="text-2xl">그림</h3>
