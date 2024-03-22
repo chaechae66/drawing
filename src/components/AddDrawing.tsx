@@ -7,7 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { LocalStorage } from "../../lib/localStorage";
+import { LocalStorage } from "../lib/localStorage";
 
 function AddDrawing() {
   const [imgFile, setImgFile] = useState<File | null>(null);
@@ -44,9 +44,14 @@ function AddDrawing() {
     formData.append("drawingImage", imgFile!);
     formData.append("user", JSON.stringify(localStorage.get()));
 
-    axios.post("http://localhost:4000/article", formData).then((res) => {
-      console.log(res);
-    });
+    axios
+      .post("http://localhost:4000/article", formData)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
   return (
     <div className="w-60">

@@ -1,5 +1,5 @@
-import AddDrawing from "./components/AddDrawing/AddDrawing";
-import List from "./components/List/List";
+import AddDrawing from "./components/AddDrawing";
+import List from "./components/List";
 
 function App() {
   return (
