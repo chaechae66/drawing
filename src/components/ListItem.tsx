@@ -3,6 +3,7 @@ import { LocalStorage } from "../lib/localStorage";
 import { TList } from "../types/List";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosResponse } from "axios";
+import { Link } from "react-router-dom";
 
 function ListItem({ elem }: { elem: TList }) {
   const localStroage = new LocalStorage();
@@ -92,10 +93,12 @@ function ListItem({ elem }: { elem: TList }) {
           </button>
         </>
       )}
-      <img
-        src={`data:image/${elem.contentType};base64,${elem.data}`}
-        alt="그림 이미지"
-      />
+      <Link to={`detail/${elem._id}`}>
+        <img
+          src={`data:image/${elem.contentType};base64,${elem.data}`}
+          alt="그림 이미지"
+        />
+      </Link>
     </div>
   );
 }
