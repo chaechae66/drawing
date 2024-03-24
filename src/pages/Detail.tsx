@@ -1,14 +1,65 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import BackBtn from "../components/BackBtn";
 import axios, { AxiosResponse } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TList } from "../types/List";
 import { LocalStorage } from "../lib/localStorage";
+import { useRef } from "react";
 function Detail() {
   const { id } = useParams();
   const localStorage = new LocalStorage();
   const userId = localStorage.get();
   const queryClient = useQueryClient();
+  const naviagte = useNavigate();
+
+  const imageRef = useRef<HTMLInputElement | null>(null);
+
+  const { mutate } = useMutation({
+    mutationKey: ["article", "put"],
+    mutationFn: (formData: FormData): Promise<AxiosResponse> =>
+      axios.post(`http://localhost:4000/article/${id}`, formData),
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["article", id] });
+    },
+  });
+
+  const { mutate: delMutate } = useMutation({
+    mutationKey: ["article", "delete"],
+    mutationFn: (): Promise<AxiosResponse> =>
+      axios.delete(`http://localhost:4000/article/${id}`),
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["article"] });
+    },
+  });
+
+  const onLoadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files![0];
+    if (!file) {
+      return;
+    }
+    const formData = new FormData();
+    formData.append("drawingImage", file!);
+    mutate(formData);
+  };
+
+  const handleUpdate = () => {
+    const isUpdate = confirm("이미지를 정말로 수정하시겠어요?");
+    if (!isUpdate) {
+      return;
+    }
+    imageRef.current!.click();
+  };
+
+  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const isDelete = confirm("이미지를 정말로 삭제하시겠어요?");
+    if (!isDelete) {
+      return;
+    }
+    delMutate();
+    alert("삭제가 완료되었습니다.");
+    naviagte("/");
+  };
 
   const {
     data: detail,
@@ -74,6 +125,29 @@ function Detail() {
       <h2>디테일페이지</h2>
       {detail ? (
         <div>
+          {detail.user === localStorage.get() && (
+            <>
+              <input
+                type="file"
+                className="hidden"
+                ref={imageRef}
+                accept=".jpg,.jpeg,.png"
+                onChange={onLoadFile}
+              />
+              <button
+                onClick={handleUpdate}
+                className="bg-red-400 mr-2 p-1 text-white"
+              >
+                수정
+              </button>
+              <button
+                onClick={handleDelete}
+                className="bg-slate-500 p-1 text-white"
+              >
+                삭제
+              </button>
+            </>
+          )}
           <img
             className="w-80"
             src={`data:image/${detail.contentType};base64,${detail.data}`}
