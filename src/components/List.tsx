@@ -2,14 +2,15 @@ import axios, { AxiosResponse } from "axios";
 import { TList } from "../types/List";
 import { useQuery } from "@tanstack/react-query";
 import ListItem from "./ListItem";
-
 function List() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["article"],
     queryFn: async (): Promise<AxiosResponse> => {
-      const result = await axios.get("http://localhost:4000/article");
+      const {
+        data: { data },
+      } = await axios.get("http://localhost:4000/article");
 
-      return JSON.parse(result.data.data).sort(
+      return data.sort(
         (a: TList, b: TList) => Date.parse(b.regDate) - Date.parse(a.regDate)
       );
     },

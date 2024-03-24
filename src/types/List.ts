@@ -3,6 +3,14 @@ export interface TList {
   data: string;
   user: string;
   _id: string;
-  __v: number;
   regDate: string;
+  count: number;
+  comment: null | TComment[];
+}
+
+export interface TComment {
+  _id: string;
+  regDate: string;
+  body: string;
+  user: string;
 }
