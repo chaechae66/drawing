@@ -4,8 +4,7 @@ export interface TList {
   user: string;
   _id: string;
   regDate: string;
-  count: number;
-  comment: null | TComment[];
+  likeCount: number;
 }
 
 export interface TComment {
