@@ -80,7 +80,11 @@ function Detail() {
       return axios
         .get(`http://localhost:4000/article/${id}/like/${userId}`)
         .then(({ data: { data } }) => {
-          return data.isLike;
+          if (data) {
+            return data.isLike;
+          } else {
+            return false;
+          }
         });
     },
   });
