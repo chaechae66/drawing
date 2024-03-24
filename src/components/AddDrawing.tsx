@@ -61,10 +61,6 @@ function AddDrawing() {
     mutate(formData);
   };
 
-  if (isPending) {
-    return <>전송 중...</>;
-  }
-
   if (isError) {
     return (
       <>
@@ -88,6 +84,7 @@ function AddDrawing() {
           제출
         </button>
       </form>
+      {isPending && <p>전송 중...</p>}
     </div>
   );
 }
