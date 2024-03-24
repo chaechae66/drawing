@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TComment, TList } from "../types/List";
 import { LocalStorage } from "../lib/localStorage";
 import { FormEventHandler, useRef, useState } from "react";
+import CommentItem from "../components/CommentItem";
 function Detail() {
   const { id } = useParams();
   const localStorage = new LocalStorage();
@@ -121,7 +122,7 @@ function Detail() {
   });
 
   const { mutate: commentMutate, error: commentMutateError } = useMutation({
-    mutationKey: ["article", "like", id],
+    mutationKey: ["article", "comment", id],
     mutationFn: (): Promise<AxiosResponse> =>
       axios.post(`http://localhost:4000/article/${id}/comment/${userId}`, {
         comment,
@@ -225,23 +226,8 @@ function Detail() {
           </button>
         </form>
       )}
-      {comments ? (
-        <div>
-          {comments.map((item) => (
-            <div key={item._id}>
-              <span>
-                {new RegExp(
-                  "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-                ).test(item.user) ? (
-                  "게스트"
-                ) : (
-                  <>{item.user}</>
-                )}
-              </span>
-              : <span>{item.body}</span>
-            </div>
-          ))}
-        </div>
+      {comments?.length !== 0 ? (
+        comments!.map((item) => <CommentItem item={item} key={item._id} />)
       ) : (
         <div>작성된 댓글이 없습니다.</div>
       )}
