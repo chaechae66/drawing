@@ -131,6 +131,7 @@ function Detail() {
         queryKey: ["article", "comment", id],
       });
       queryClient.invalidateQueries({ queryKey: ["article", id] });
+      setComment("");
     },
   });
 
@@ -200,8 +201,9 @@ function Detail() {
             alt="그림 이미지"
           />
           <div className="text-xl">
-            {detail.likeCount} :{" "}
-            <span onClick={onLikeClick}>{isLike ? "♥" : "♡"}</span>
+            <span onClick={onLikeClick}>{isLike ? "♥" : "♡"}</span> :
+            {detail.likeCount}
+            <span>✉️</span> :{detail.commentCount}
           </div>
         </div>
       ) : (
