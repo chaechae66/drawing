@@ -5,6 +5,7 @@ export interface TList {
   _id: string;
   regDate: string;
   likeCount: number;
+  commentCount: number;
 }
 
 export interface TComment {

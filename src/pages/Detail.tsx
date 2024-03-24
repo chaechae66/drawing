@@ -2,9 +2,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import BackBtn from "../components/BackBtn";
 import axios, { AxiosResponse } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { TList } from "../types/List";
+import { TComment, TList } from "../types/List";
 import { LocalStorage } from "../lib/localStorage";
-import { useRef } from "react";
+import { FormEventHandler, useRef, useState } from "react";
 function Detail() {
   const { id } = useParams();
   const localStorage = new LocalStorage();
@@ -13,6 +13,7 @@ function Detail() {
   const naviagte = useNavigate();
 
   const imageRef = useRef<HTMLInputElement | null>(null);
+  const [comment, setComment] = useState("");
 
   const { mutate } = useMutation({
     mutationKey: ["article", "put"],
@@ -89,6 +90,24 @@ function Detail() {
     },
   });
 
+  const { data: comments, error: commentError } = useQuery({
+    queryKey: ["article", "comment", id],
+    queryFn: async (): Promise<TComment[]> => {
+      return axios
+        .get(`http://localhost:4000/article/${id}/comment/${userId}`)
+        .then(({ data: { data } }) => {
+          if (data) {
+            return data.sort(
+              (a: TList, b: TList) =>
+                Date.parse(b.regDate) - Date.parse(a.regDate)
+            );
+          } else {
+            return null;
+          }
+        });
+    },
+  });
+
   const { mutate: likeMutate, error: likeMutateError } = useMutation({
     mutationKey: ["article", "like", userId, id],
     mutationFn: (): Promise<AxiosResponse> =>
@@ -96,6 +115,20 @@ function Detail() {
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: ["article", "like", userId, id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["article", id] });
+    },
+  });
+
+  const { mutate: commentMutate, error: commentMutateError } = useMutation({
+    mutationKey: ["article", "like", id],
+    mutationFn: (): Promise<AxiosResponse> =>
+      axios.post(`http://localhost:4000/article/${id}/comment/${userId}`, {
+        comment,
+      }),
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ["article", "comment", id],
       });
       queryClient.invalidateQueries({ queryKey: ["article", id] });
     },
@@ -117,11 +150,20 @@ function Detail() {
     alert("좋아요가 정상적으로 작동되지 않았습니다");
   }
 
+  if (commentMutateError || commentError) {
+    alert("댓글 작성에 실패하였습니다.");
+  }
+
   const onLikeClick = () => {
     if (!userId) {
       alert("좋아요가 정상적으로 작동되지 않았습니다");
     }
     likeMutate();
+  };
+
+  const onCommentSubmit: FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+    commentMutate();
   };
 
   return (
@@ -166,10 +208,14 @@ function Detail() {
         <p>404 : 존재하지 않는 페이지입니다.</p>
       )}
       {detail && (
-        <form>
+        <form onSubmit={onCommentSubmit}>
           <input
             className="border-gray-300 border-solid border-[1px]"
             type="text"
+            value={comment}
+            onChange={(e) => {
+              setComment(e.target.value);
+            }}
             placeholder="댓글입력해주세요"
           />
           <button type="submit" className="bg-blue-500 px-1 text-white">
@@ -177,15 +223,26 @@ function Detail() {
           </button>
         </form>
       )}
-      {/* {detail && (
+      {comments ? (
         <div>
-          {detail.comment?.length !== 0 ? (
-            <>댓글있음</>
-          ) : (
-            <>등록된 댓글이 없습니다.</>
-          )}
+          {comments.map((item) => (
+            <div key={item._id}>
+              <span>
+                {new RegExp(
+                  "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                ).test(item.user) ? (
+                  "게스트"
+                ) : (
+                  <>{item.user}</>
+                )}
+              </span>
+              : <span>{item.body}</span>
+            </div>
+          ))}
         </div>
-      )} */}
+      ) : (
+        <div>작성된 댓글이 없습니다.</div>
+      )}
       <BackBtn />
     </>
   );
