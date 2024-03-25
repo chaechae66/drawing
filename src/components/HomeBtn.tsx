@@ -9,7 +9,7 @@ function BackBtn() {
         navigate("/");
       }}
     >
-      뒤로가기
+      홈으로
     </button>
   );
 }

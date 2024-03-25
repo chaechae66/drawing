@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import BackBtn from "../components/BackBtn";
+import HomeBtn from "../components/HomeBtn";
 import axios, { AxiosResponse } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TComment, TList } from "../types/List";
@@ -226,12 +226,12 @@ function Detail() {
           </button>
         </form>
       )}
-      {comments?.length !== 0 ? (
-        comments!.map((item) => <CommentItem item={item} key={item._id} />)
+      {comment && comments?.length !== 0 ? (
+        comments?.map((item) => <CommentItem item={item} key={item._id} />)
       ) : (
         <div>작성된 댓글이 없습니다.</div>
       )}
-      <BackBtn />
+      <HomeBtn />
     </>
   );
 }
