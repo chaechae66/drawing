@@ -58,7 +58,7 @@ function CommentItem({ item }: Props) {
 
   return (
     <div key={item._id}>
-      {item.user === localStorage.get() && (
+      {item.user === localStorage.get("uuidUser") && (
         <>
           {!commentMode && (
             <button

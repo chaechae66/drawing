@@ -27,11 +27,11 @@ function AddDrawing() {
   const localStorage = new LocalStorage();
 
   useEffect(() => {
-    if (localStorage.get()) {
+    if (localStorage.get("uuidUser")) {
       return;
     }
 
-    localStorage.set(uuidv4());
+    localStorage.set("uuidUser", uuidv4());
   }, []);
 
   const onLoadFile: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -56,7 +56,7 @@ function AddDrawing() {
     }
     const formData = new FormData();
     formData.append("drawingImage", imgFile!);
-    formData.append("user", JSON.stringify(localStorage.get()));
+    formData.append("user", JSON.stringify(localStorage.get("uuidUser")));
 
     mutate(formData);
   };

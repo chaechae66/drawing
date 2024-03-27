@@ -9,7 +9,7 @@ import CommentItem from "../components/CommentItem";
 function Detail() {
   const { id } = useParams();
   const localStorage = new LocalStorage();
-  const userId = localStorage.get();
+  const userId = localStorage.get("uuidUser");
   const queryClient = useQueryClient();
   const naviagte = useNavigate();
 
@@ -95,7 +95,7 @@ function Detail() {
     queryKey: ["article", "comment", id],
     queryFn: async (): Promise<TComment[]> => {
       return axios
-        .get(`http://localhost:4000/article/${id}/comment/${userId}`)
+        .get(`http://localhost:4000/article/${id}/comment/${userId}}`)
         .then(({ data: { data } }) => {
           if (data) {
             return data.sort(
@@ -173,7 +173,7 @@ function Detail() {
       <h2>디테일페이지</h2>
       {detail ? (
         <div>
-          {detail.user === localStorage.get() && (
+          {detail.user === userId && (
             <>
               <input
                 type="file"
@@ -226,7 +226,7 @@ function Detail() {
           </button>
         </form>
       )}
-      {comment && comments?.length !== 0 ? (
+      {comments && comments?.length !== 0 ? (
         comments?.map((item) => <CommentItem item={item} key={item._id} />)
       ) : (
         <div>작성된 댓글이 없습니다.</div>

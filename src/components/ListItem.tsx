@@ -6,7 +6,7 @@ import axios, { AxiosResponse } from "axios";
 
 function ListItem({ elem }: { elem: TList }) {
   const localStorage = new LocalStorage();
-  const userId = localStorage.get();
+  const userId = localStorage.get("uuidUser");
   const queryClient = useQueryClient();
 
   const { mutate: likeMutate, error: likeMutateError } = useMutation({

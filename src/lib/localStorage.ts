@@ -1,11 +1,11 @@
 export class LocalStorage {
-  set(uuid: string) {
-    localStorage.setItem("user", uuid);
+  set(key: string, uuid: string) {
+    localStorage.setItem(key, uuid);
   }
-  get(): string {
-    return localStorage.getItem("user")!;
+  get(key: string): string {
+    return localStorage.getItem(key)!;
   }
-  clear() {
-    localStorage.removeItem("user");
+  clear(key: string) {
+    localStorage.removeItem(key);
   }
 }

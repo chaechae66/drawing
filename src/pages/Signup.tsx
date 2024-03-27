@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HomeBtn from "../components/HomeBtn";
 import { ChangeEventHandler, FormEventHandler, useState } from "react";
 import axios from "axios";
@@ -9,12 +9,19 @@ function Signup() {
     password: "",
     nickname: "",
   });
+  const navigate = useNavigate();
+
   const onSubmit: FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
+    if (!userInfo.id || !userInfo.password || !userInfo.nickname) {
+      alert("빈 항목들을 채워주세요");
+      return;
+    }
     axios
       .post(`http://localhost:4000/user/signup`, userInfo)
-      .then((res) => {
-        console.log(res);
+      .then(() => {
+        setUserInfo({ id: "", password: "", nickname: "" });
+        navigate("/login");
       })
       .catch((err) => {
         if (err.response.data.message) {
@@ -41,6 +48,7 @@ function Signup() {
           type="text"
           placeholder="아이디"
           name="id"
+          autoComplete="username"
         />
         <input
           value={userInfo.password}
@@ -48,6 +56,7 @@ function Signup() {
           type="password"
           placeholder="비밀번호"
           name="password"
+          autoComplete="current-password"
         />
         <input
           value={userInfo.nickname}
