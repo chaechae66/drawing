@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -9,6 +9,7 @@ import {
 } from "react";
 import { LocalStorage } from "../lib/localStorage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import API from "../lib/headerInstance";
 
 function AddDrawing() {
   const [imgFile, setImgFile] = useState<File | null>(null);
@@ -18,7 +19,7 @@ function AddDrawing() {
   const { mutate, isPending, isError, error } = useMutation({
     mutationKey: ["article"],
     mutationFn: (formData: FormData): Promise<AxiosResponse> =>
-      axios.post("http://localhost:4000/article", formData),
+      API.post("/article", formData),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },

@@ -6,12 +6,16 @@ import { TComment, TList } from "../types/List";
 import { LocalStorage } from "../lib/localStorage";
 import { FormEventHandler, useRef, useState } from "react";
 import CommentItem from "../components/CommentItem";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
+import API from "../lib/headerInstance";
 function Detail() {
   const { id } = useParams();
   const localStorage = new LocalStorage();
   const userId = localStorage.get("uuidUser");
   const queryClient = useQueryClient();
   const naviagte = useNavigate();
+  const user = useSelector((state: RootState) => state.user);
 
   const imageRef = useRef<HTMLInputElement | null>(null);
   const [comment, setComment] = useState("");
@@ -19,7 +23,9 @@ function Detail() {
   const { mutate } = useMutation({
     mutationKey: ["article", "put"],
     mutationFn: (formData: FormData): Promise<AxiosResponse> =>
-      axios.post(`http://localhost:4000/article/${id}`, formData),
+      API.post(`http://localhost:4000/article/${id}`, formData, {
+        headers: { uuid: userId },
+      }),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article", id] });
     },
@@ -28,7 +34,9 @@ function Detail() {
   const { mutate: delMutate } = useMutation({
     mutationKey: ["article", "delete"],
     mutationFn: (): Promise<AxiosResponse> =>
-      axios.delete(`http://localhost:4000/article/${id}`),
+      API.delete(`http://localhost:4000/article/${id}`, {
+        headers: { uuid: userId },
+      }),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },
@@ -79,15 +87,15 @@ function Detail() {
   const { data: isLike, error: likeError } = useQuery({
     queryKey: ["article", "like", userId, id],
     queryFn: async (): Promise<TList> => {
-      return axios
-        .get(`http://localhost:4000/article/${id}/like/${userId}`)
-        .then(({ data: { data } }) => {
+      return API.get(`http://localhost:4000/article/${id}/like`).then(
+        ({ data }) => {
           if (data) {
             return data.isLike;
           } else {
             return false;
           }
-        });
+        }
+      );
     },
   });
 
@@ -95,7 +103,9 @@ function Detail() {
     queryKey: ["article", "comment", id],
     queryFn: async (): Promise<TComment[]> => {
       return axios
-        .get(`http://localhost:4000/article/${id}/comment/${userId}}`)
+        .get(`http://localhost:4000/article/${id}/comment`, {
+          headers: { uuid: userId },
+        })
         .then(({ data: { data } }) => {
           if (data) {
             return data.sort(
@@ -112,7 +122,11 @@ function Detail() {
   const { mutate: likeMutate, error: likeMutateError } = useMutation({
     mutationKey: ["article", "like", userId, id],
     mutationFn: (): Promise<AxiosResponse> =>
-      axios.post(`http://localhost:4000/article/${id}/like/${userId}`),
+      API.post(
+        `http://localhost:4000/article/${id}/like`,
+        {},
+        { headers: { uuid: userId } }
+      ),
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: ["article", "like", userId, id],
@@ -124,9 +138,13 @@ function Detail() {
   const { mutate: commentMutate, error: commentMutateError } = useMutation({
     mutationKey: ["article", "comment", id],
     mutationFn: (): Promise<AxiosResponse> =>
-      axios.post(`http://localhost:4000/article/${id}/comment/${userId}`, {
-        comment,
-      }),
+      API.post(
+        `http://localhost:4000/article/${id}/comment`,
+        {
+          comment,
+        },
+        { headers: { uuid: userId } }
+      ),
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: ["article", "comment", id],
@@ -173,7 +191,9 @@ function Detail() {
       <h2>디테일페이지</h2>
       {detail ? (
         <div>
-          {detail.user === userId && (
+          {(user.id
+            ? detail?.userInfo?.id === user.id
+            : detail.user === userId) && (
             <>
               <input
                 type="file"

@@ -2,8 +2,11 @@ import { FormEventHandler, useState } from "react";
 import { TComment } from "../types/List";
 import { LocalStorage } from "../lib/localStorage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios, { AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
+import API from "../lib/headerInstance";
 
 interface Props {
   item: TComment;
@@ -11,6 +14,9 @@ interface Props {
 
 function CommentItem({ item }: Props) {
   const localStorage = new LocalStorage();
+  const uuidUser = localStorage.get("uuidUser");
+  const loginUser = useSelector((state: RootState) => state.user);
+
   const [commentMode, setCommentMode] = useState(false);
   const [comment, setComment] = useState("");
   const { id } = useParams();
@@ -19,9 +25,13 @@ function CommentItem({ item }: Props) {
   const { mutate: commentMutate, error: commentMutateError } = useMutation({
     mutationKey: ["article", "comment", item._id],
     mutationFn: (): Promise<AxiosResponse> => {
-      return axios.put(`http://localhost:4000/article/comment/${item._id}`, {
-        comment,
-      });
+      return API.put(
+        `http://localhost:4000/article/comment/${item._id}`,
+        {
+          comment,
+        },
+        { headers: { uuid: uuidUser } }
+      );
     },
     onSuccess() {
       queryClient.invalidateQueries({
@@ -33,9 +43,11 @@ function CommentItem({ item }: Props) {
   });
 
   const { mutate: delMutate, error: delMutateError } = useMutation({
-    mutationKey: ["article", "comment", "delete", item._id],
+    mutationKey: ["article", "comment", "delete", id],
     mutationFn: (): Promise<AxiosResponse> =>
-      axios.delete(`http://localhost:4000/article/${id}/comment/${item._id}`),
+      API.delete(`http://localhost:4000/article/${id}/comment/${item._id}`, {
+        headers: { uuid: uuidUser },
+      }),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article", "comment", id] });
       queryClient.invalidateQueries({ queryKey: ["article", id] });
@@ -58,7 +70,9 @@ function CommentItem({ item }: Props) {
 
   return (
     <div key={item._id}>
-      {item.user === localStorage.get("uuidUser") && (
+      {(loginUser.id
+        ? item?.userInfo?.id === loginUser.id
+        : item.user === uuidUser) && (
         <>
           {!commentMode && (
             <button
@@ -82,13 +96,7 @@ function CommentItem({ item }: Props) {
         </>
       )}
       <span>
-        {new RegExp(
-          "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-        ).test(item.user) ? (
-          "게스트"
-        ) : (
-          <>{item.user}</>
-        )}
+        {item.userInfo?.nickname ? item.userInfo?.nickname : "게스트"}
       </span>
       :{" "}
       <form onSubmit={onCommentSubmit}>

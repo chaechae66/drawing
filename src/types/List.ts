@@ -5,6 +5,11 @@ export interface TList {
   _id: string;
   regDate: string;
   likeCount: number;
+  userInfo: {
+    id: string;
+    nickname: string;
+    _id: string;
+  };
   commentCount: number;
 }
 
@@ -13,4 +18,16 @@ export interface TComment {
   regDate: string;
   body: string;
   user: string;
+  userInfo: {
+    id: string;
+    nickname: string;
+    _id: string;
+  };
+}
+
+export interface Tlike {
+  articleID: string;
+  isLike: boolean;
+  user: string;
+  _id: string;
 }
