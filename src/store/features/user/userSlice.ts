@@ -19,9 +19,12 @@ export const userSlice = createSlice({
       state.id = action.payload.id;
       state.nickname = action.payload.nickname;
     },
+    removeUser: (state) => {
+      (state.id = null), (state.nickname = null);
+    },
   },
 });
 
-export const { setUser } = userSlice.actions;
+export const { setUser, removeUser } = userSlice.actions;
 
 export default userSlice.reducer;

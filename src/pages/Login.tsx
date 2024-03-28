@@ -25,13 +25,18 @@ function Login() {
     axios
       .post(`http://localhost:4000/user/login`, userInfo)
       .then((res) => {
-        console.log(res.data);
-        if (localStorage.get("token") || localStorage.get("expiredAt")) {
-          alert("로그인된 상태입니다.");
+        if (
+          localStorage.get("token") ||
+          localStorage.get("expiredAt") ||
+          localStorage.get("refreshToken")
+        ) {
+          alert("이미 로그인된 상태입니다.");
           return;
         }
+
         localStorage.set("token", res.data.accessToken);
-        localStorage.set("expiredAt", res.data.expireAt);
+        localStorage.set("expiredAt", res.data.expiredAt);
+        localStorage.set("refreshToken", res.data.refreshToken);
 
         dispatch(setUser({ id: res.data.id, nickname: res.data.nickname }));
         navigate("/");
