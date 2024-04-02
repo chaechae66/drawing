@@ -2,16 +2,18 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import userSlice from "./features/user/userSlice";
 import storage from "redux-persist/lib/storage";
 import {
+  persistReducer,
+  persistStore,
   FLUSH,
+  REHYDRATE,
   PAUSE,
   PERSIST,
   PURGE,
   REGISTER,
-  REHYDRATE,
-  persistReducer,
 } from "redux-persist";
 import tokenSlice from "./features/token/tokenSlice";
 import uuidSlice from "./features/uuid/uuidSlice";
+import { setupListeners } from "@reduxjs/toolkit/query";
 
 const reducers = combineReducers({
   user: userSlice,
@@ -36,6 +38,10 @@ export const store = configureStore({
       },
     }),
 });
+
+setupListeners(store.dispatch);
+
+export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

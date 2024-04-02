@@ -2,9 +2,9 @@ import { AxiosResponse } from "axios";
 
 import { ChangeEventHandler, FormEventHandler, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import API from "../lib/headerInstance";
-import { RootState } from "../store/store";
+import { RootState, store } from "../store/store";
 import { useSelector } from "react-redux";
+import { setupAxiosInstance } from "../lib/headerInstance";
 
 function AddDrawing() {
   const [imgFile, setImgFile] = useState<File | null>(null);
@@ -15,7 +15,7 @@ function AddDrawing() {
   const { mutate, isPending, isError, error } = useMutation({
     mutationKey: ["article"],
     mutationFn: (formData: FormData): Promise<AxiosResponse> =>
-      API.post("/article", formData),
+      setupAxiosInstance(store).post("/article", formData),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },

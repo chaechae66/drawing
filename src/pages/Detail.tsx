@@ -6,8 +6,9 @@ import { TComment, TList } from "../types/List";
 import { FormEventHandler, useRef, useState } from "react";
 import CommentItem from "../components/CommentItem";
 import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import API from "../lib/headerInstance";
+import { RootState, store } from "../store/store";
+import { setupAxiosInstance } from "../lib/headerInstance";
+
 function Detail() {
   const { id } = useParams();
   const queryClient = useQueryClient();
@@ -21,16 +22,20 @@ function Detail() {
   const { mutate } = useMutation({
     mutationKey: ["article", "put"],
     mutationFn: (formData: FormData): Promise<AxiosResponse> =>
-      API.post(`http://localhost:4000/article/${id}`, formData),
+      setupAxiosInstance(store).post(
+        `http://localhost:4000/article/${id}`,
+        formData
+      ),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article", id] });
+      queryClient.invalidateQueries({ queryKey: ["article"] });
     },
   });
 
   const { mutate: delMutate } = useMutation({
     mutationKey: ["article", "delete"],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.delete(`http://localhost:4000/article/${id}`),
+      setupAxiosInstance(store).delete(`http://localhost:4000/article/${id}`),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },
@@ -81,15 +86,15 @@ function Detail() {
   const { data: isLike, error: likeError } = useQuery({
     queryKey: ["article", "like", uuid, id],
     queryFn: async (): Promise<TList> => {
-      return API.get(`http://localhost:4000/article/${id}/like`).then(
-        ({ data }) => {
+      return setupAxiosInstance(store)
+        .get(`http://localhost:4000/article/${id}/like`)
+        .then(({ data }) => {
           if (data) {
             return data.isLike;
           } else {
             return false;
           }
-        }
-      );
+        });
     },
   });
 
@@ -114,7 +119,10 @@ function Detail() {
   const { mutate: likeMutate, error: likeMutateError } = useMutation({
     mutationKey: ["article", "like", uuid, id],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.post(`http://localhost:4000/article/${id}/like`, {}),
+      setupAxiosInstance(store).post(
+        `http://localhost:4000/article/${id}/like`,
+        {}
+      ),
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: ["article", "like", uuid, id],
@@ -126,9 +134,12 @@ function Detail() {
   const { mutate: commentMutate, error: commentMutateError } = useMutation({
     mutationKey: ["article", "comment", id],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.post(`http://localhost:4000/article/${id}/comment`, {
-        comment,
-      }),
+      setupAxiosInstance(store).post(
+        `http://localhost:4000/article/${id}/comment`,
+        {
+          comment,
+        }
+      ),
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: ["article", "comment", id],

@@ -1,81 +1,80 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import moment from "moment";
-import { store } from "../store/store";
 import {
   removeToken,
   saveAccessToken,
 } from "../store/features/token/tokenSlice";
+import { Store } from "@reduxjs/toolkit";
 
-const { dispatch, getState } = store;
+export const setupAxiosInstance = (store: Store) => {
+  const API = axios.create({
+    baseURL: import.meta.env.VITE_REACT_APP_BASE_URL,
+  });
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_REACT_APP_BASE_URL,
-});
+  const accessToken = store.getState().token.accessToken;
+  const refreshToken = store.getState().token.refreshToken;
+  const expireAt = store.getState().token.expiredAt;
+  const uuid = store.getState().uuid.uuid;
 
-const accessToken = getState().token.accessToken;
-const uuid = getState().uuid.uuid;
-const refreshToken = getState().token.refreshToken;
-const expireAt = getState().token.expiredAt;
-
-API.interceptors.request.use(
-  async (
-    config: InternalAxiosRequestConfig
-  ): Promise<InternalAxiosRequestConfig> => {
-    try {
-      if (uuid) {
+  API.interceptors.request.use(
+    async (
+      config: InternalAxiosRequestConfig
+    ): Promise<InternalAxiosRequestConfig> => {
+      try {
         config.headers["uuid"] = uuid;
-      } else {
-        throw Error("uuid가 존재하지 않습니다.");
-      }
-      if (accessToken) {
-        config.headers["Authorization"] = `Bearer ${accessToken}`;
-        return config;
-      } else {
-        return config;
-      }
-    } catch (err) {
-      console.error(
-        "[_axios.interceptors.request] config : " + (err as AxiosError).message
-      );
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-API.interceptors.response.use(
-  function (response) {
-    return response.data;
-  },
-  async function (error) {
-    const { response, config } = error;
-    if (response.status === 401) {
-      if (moment(Number(expireAt)).diff(moment()) < 0) {
-        const res = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BASE_URL}user/retoken`,
-          { headers: { Authorization: `Bearer ${accessToken}`, refreshToken } }
+        if (accessToken) {
+          config.headers["Authorization"] = `Bearer ${accessToken}`;
+          return config;
+        } else {
+          return config;
+        }
+      } catch (err) {
+        console.error(
+          "[_axios.interceptors.request] config : " +
+            (err as AxiosError).message
         );
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
 
-        if (res.status == 200) {
-          dispatch(saveAccessToken(res.data.data.accessToken));
-          config.headers[
-            "Authorization"
-          ] = `Bearer ${res.data.data.accessToken}`;
-          return axios(config);
-        }
-        if (res.status == 401) {
-          dispatch(removeToken());
-          window.alert("토큰이 만료되어 자동으로 로그아웃 되었습니다.");
-        }
+  API.interceptors.response.use(
+    function (response) {
+      return response.data;
+    },
+    async function (error) {
+      const { response, config } = error;
+      if (response.status === 401) {
+        if (moment(Number(expireAt)).diff(moment()) < 0) {
+          const res = await axios.get(
+            `${import.meta.env.VITE_REACT_APP_BASE_URL}user/retoken`,
+            {
+              headers: { Authorization: `Bearer ${accessToken}`, refreshToken },
+            }
+          );
 
-        return;
+          if (res.status == 200) {
+            store.dispatch(saveAccessToken(res.data.data.accessToken));
+            config.headers[
+              "Authorization"
+            ] = `Bearer ${res.data.data.accessToken}`;
+            return axios(config);
+          }
+          if (res.status == 401) {
+            store.dispatch(removeToken());
+            window.alert("토큰이 만료되어 자동으로 로그아웃 되었습니다.");
+          }
+
+          return;
+        }
+        Promise.reject(error);
       }
       Promise.reject(error);
     }
-    Promise.reject(error);
-  }
-);
+  );
 
-export default API;
+  return API;
+};

@@ -2,9 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TList } from "../types/List";
 import { Link } from "react-router-dom";
 import { AxiosResponse } from "axios";
-import API from "../lib/headerInstance";
-import { RootState } from "../store/store";
+import { RootState, store } from "../store/store";
 import { useSelector } from "react-redux";
+import { setupAxiosInstance } from "../lib/headerInstance";
 
 function ListItem({ elem }: { elem: TList }) {
   const uuid = useSelector((state: RootState) => state.uuid.uuid);
@@ -13,7 +13,10 @@ function ListItem({ elem }: { elem: TList }) {
   const { mutate: likeMutate, error: likeMutateError } = useMutation({
     mutationKey: ["article", "like", uuid, elem._id],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.post(`http://localhost:4000/article/${elem._id}/like`, {}),
+      setupAxiosInstance(store).post(
+        `http://localhost:4000/article/${elem._id}/like`,
+        {}
+      ),
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: ["article", "like", uuid, elem._id],
@@ -24,15 +27,15 @@ function ListItem({ elem }: { elem: TList }) {
   const { data: isLike, error: likeError } = useQuery({
     queryKey: ["article", "like", uuid, elem._id],
     queryFn: async () => {
-      return API.get(`http://localhost:4000/article/${elem._id}/like`).then(
-        ({ data }) => {
+      return setupAxiosInstance(store)
+        .get(`http://localhost:4000/article/${elem._id}/like`)
+        .then(({ data }) => {
           if (data) {
             return data.isLike;
           } else {
             return false;
           }
-        }
-      );
+        });
     },
   });
 

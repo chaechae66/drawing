@@ -4,8 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import API from "../lib/headerInstance";
+import { RootState, store } from "../store/store";
+import { setupAxiosInstance } from "../lib/headerInstance";
 
 interface Props {
   item: TComment;
@@ -23,9 +23,12 @@ function CommentItem({ item }: Props) {
   const { mutate: commentMutate, error: commentMutateError } = useMutation({
     mutationKey: ["article", "comment", item._id],
     mutationFn: (): Promise<AxiosResponse> => {
-      return API.put(`http://localhost:4000/article/comment/${item._id}`, {
-        comment,
-      });
+      return setupAxiosInstance(store).put(
+        `http://localhost:4000/article/comment/${item._id}`,
+        {
+          comment,
+        }
+      );
     },
     onSuccess() {
       queryClient.invalidateQueries({
@@ -39,7 +42,9 @@ function CommentItem({ item }: Props) {
   const { mutate: delMutate, error: delMutateError } = useMutation({
     mutationKey: ["article", "comment", "delete", id],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.delete(`http://localhost:4000/article/${id}/comment/${item._id}`),
+      setupAxiosInstance(store).delete(
+        `http://localhost:4000/article/${id}/comment/${item._id}`
+      ),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article", "comment", id] });
       queryClient.invalidateQueries({ queryKey: ["article", id] });
