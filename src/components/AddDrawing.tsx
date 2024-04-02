@@ -1,19 +1,15 @@
 import { AxiosResponse } from "axios";
-import { v4 as uuidv4 } from "uuid";
 
-import {
-  ChangeEventHandler,
-  FormEventHandler,
-  useEffect,
-  useState,
-} from "react";
-import { LocalStorage } from "../lib/localStorage";
+import { ChangeEventHandler, FormEventHandler, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import API from "../lib/headerInstance";
+import { RootState } from "../store/store";
+import { useSelector } from "react-redux";
 
 function AddDrawing() {
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [prevImg, setPrevImg] = useState<string | null>(null);
+  const uuid = useSelector((state: RootState) => state.uuid.uuid);
 
   const queryClient = useQueryClient();
   const { mutate, isPending, isError, error } = useMutation({
@@ -24,16 +20,6 @@ function AddDrawing() {
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },
   });
-
-  const localStorage = new LocalStorage();
-
-  useEffect(() => {
-    if (localStorage.get("uuidUser")) {
-      return;
-    }
-
-    localStorage.set("uuidUser", uuidv4());
-  }, []);
 
   const onLoadFile: ChangeEventHandler<HTMLInputElement> = (e) => {
     const file = e.target.files![0];
@@ -57,7 +43,7 @@ function AddDrawing() {
     }
     const formData = new FormData();
     formData.append("drawingImage", imgFile!);
-    formData.append("user", JSON.stringify(localStorage.get("uuidUser")));
+    formData.append("user", JSON.stringify(uuid));
 
     mutate(formData);
   };

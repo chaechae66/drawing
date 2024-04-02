@@ -3,25 +3,33 @@ import AddDrawing from "./components/AddDrawing";
 import List from "./components/List";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "./store/store";
-import { LocalStorage } from "./lib/localStorage";
 import { removeUser } from "./store/features/user/userSlice";
-import { MouseEventHandler } from "react";
+import { MouseEventHandler, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { v4 as uuidv4 } from "uuid";
+import { removeToken } from "./store/features/token/tokenSlice";
+import { saveUUID } from "./store/features/uuid/uuidSlice";
 
 function App() {
   const user = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
-  const localStroage = new LocalStorage();
+  const uuid = useSelector((state: RootState) => state.uuid.uuid);
   const queryClient = useQueryClient();
 
   const onLogOut: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
-    localStroage.clear("token");
-    localStroage.clear("refreshToken");
-    localStroage.clear("expiredAt");
+    dispatch(removeToken());
     dispatch(removeUser());
     queryClient.invalidateQueries({ queryKey: ["article"] });
   };
+
+  useEffect(() => {
+    if (uuid) {
+      return;
+    }
+
+    dispatch(saveUUID(uuidv4()));
+  }, [uuid, dispatch]);
 
   return (
     <>

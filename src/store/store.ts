@@ -10,15 +10,19 @@ import {
   REHYDRATE,
   persistReducer,
 } from "redux-persist";
+import tokenSlice from "./features/token/tokenSlice";
+import uuidSlice from "./features/uuid/uuidSlice";
 
 const reducers = combineReducers({
   user: userSlice,
+  token: tokenSlice,
+  uuid: uuidSlice,
 });
 
 const persistConfig = {
   key: "user",
-  storage, // 로컬 스토리지에 저장
-  whitelist: ["user"],
+  storage,
+  whitelist: ["user", "token", "uuid"],
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);

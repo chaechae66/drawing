@@ -3,7 +3,6 @@ import HomeBtn from "../components/HomeBtn";
 import axios, { AxiosResponse } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TComment, TList } from "../types/List";
-import { LocalStorage } from "../lib/localStorage";
 import { FormEventHandler, useRef, useState } from "react";
 import CommentItem from "../components/CommentItem";
 import { useSelector } from "react-redux";
@@ -11,11 +10,10 @@ import { RootState } from "../store/store";
 import API from "../lib/headerInstance";
 function Detail() {
   const { id } = useParams();
-  const localStorage = new LocalStorage();
-  const userId = localStorage.get("uuidUser");
   const queryClient = useQueryClient();
   const naviagte = useNavigate();
-  const user = useSelector((state: RootState) => state.user);
+  const loginUser = useSelector((state: RootState) => state.user);
+  const uuid = useSelector((state: RootState) => state.uuid.uuid);
 
   const imageRef = useRef<HTMLInputElement | null>(null);
   const [comment, setComment] = useState("");
@@ -23,9 +21,7 @@ function Detail() {
   const { mutate } = useMutation({
     mutationKey: ["article", "put"],
     mutationFn: (formData: FormData): Promise<AxiosResponse> =>
-      API.post(`http://localhost:4000/article/${id}`, formData, {
-        headers: { uuid: userId },
-      }),
+      API.post(`http://localhost:4000/article/${id}`, formData),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article", id] });
     },
@@ -34,9 +30,7 @@ function Detail() {
   const { mutate: delMutate } = useMutation({
     mutationKey: ["article", "delete"],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.delete(`http://localhost:4000/article/${id}`, {
-        headers: { uuid: userId },
-      }),
+      API.delete(`http://localhost:4000/article/${id}`),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },
@@ -85,7 +79,7 @@ function Detail() {
   });
 
   const { data: isLike, error: likeError } = useQuery({
-    queryKey: ["article", "like", userId, id],
+    queryKey: ["article", "like", uuid, id],
     queryFn: async (): Promise<TList> => {
       return API.get(`http://localhost:4000/article/${id}/like`).then(
         ({ data }) => {
@@ -103,9 +97,7 @@ function Detail() {
     queryKey: ["article", "comment", id],
     queryFn: async (): Promise<TComment[]> => {
       return axios
-        .get(`http://localhost:4000/article/${id}/comment`, {
-          headers: { uuid: userId },
-        })
+        .get(`http://localhost:4000/article/${id}/comment`)
         .then(({ data: { data } }) => {
           if (data) {
             return data.sort(
@@ -120,16 +112,12 @@ function Detail() {
   });
 
   const { mutate: likeMutate, error: likeMutateError } = useMutation({
-    mutationKey: ["article", "like", userId, id],
+    mutationKey: ["article", "like", uuid, id],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.post(
-        `http://localhost:4000/article/${id}/like`,
-        {},
-        { headers: { uuid: userId } }
-      ),
+      API.post(`http://localhost:4000/article/${id}/like`, {}),
     onSuccess() {
       queryClient.invalidateQueries({
-        queryKey: ["article", "like", userId, id],
+        queryKey: ["article", "like", uuid, id],
       });
       queryClient.invalidateQueries({ queryKey: ["article", id] });
     },
@@ -138,13 +126,9 @@ function Detail() {
   const { mutate: commentMutate, error: commentMutateError } = useMutation({
     mutationKey: ["article", "comment", id],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.post(
-        `http://localhost:4000/article/${id}/comment`,
-        {
-          comment,
-        },
-        { headers: { uuid: userId } }
-      ),
+      API.post(`http://localhost:4000/article/${id}/comment`, {
+        comment,
+      }),
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: ["article", "comment", id],
@@ -175,7 +159,7 @@ function Detail() {
   }
 
   const onLikeClick = () => {
-    if (!userId) {
+    if (!uuid) {
       alert("좋아요가 정상적으로 작동되지 않았습니다");
     }
     likeMutate();
@@ -191,9 +175,9 @@ function Detail() {
       <h2>디테일페이지</h2>
       {detail ? (
         <div>
-          {(user.id
-            ? detail?.userInfo?.id === user.id
-            : detail.user === userId) && (
+          {(loginUser.id
+            ? detail?.userInfo?.id === loginUser.id
+            : detail.user === uuid) && (
             <>
               <input
                 type="file"

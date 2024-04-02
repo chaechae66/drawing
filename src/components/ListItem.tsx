@@ -1,47 +1,43 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LocalStorage } from "../lib/localStorage";
 import { TList } from "../types/List";
 import { Link } from "react-router-dom";
 import { AxiosResponse } from "axios";
 import API from "../lib/headerInstance";
+import { RootState } from "../store/store";
+import { useSelector } from "react-redux";
 
 function ListItem({ elem }: { elem: TList }) {
-  const localStorage = new LocalStorage();
-  const userId = localStorage.get("uuidUser");
+  const uuid = useSelector((state: RootState) => state.uuid.uuid);
   const queryClient = useQueryClient();
 
   const { mutate: likeMutate, error: likeMutateError } = useMutation({
-    mutationKey: ["article", "like", userId, elem._id],
+    mutationKey: ["article", "like", uuid, elem._id],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.post(
-        `http://localhost:4000/article/${elem._id}/like`,
-        {},
-        { headers: { uuid: userId } }
-      ),
+      API.post(`http://localhost:4000/article/${elem._id}/like`, {}),
     onSuccess() {
       queryClient.invalidateQueries({
-        queryKey: ["article", "like", userId, elem._id],
+        queryKey: ["article", "like", uuid, elem._id],
       });
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },
   });
   const { data: isLike, error: likeError } = useQuery({
-    queryKey: ["article", "like", userId, elem._id],
+    queryKey: ["article", "like", uuid, elem._id],
     queryFn: async () => {
-      return API.get(`http://localhost:4000/article/${elem._id}/like`, {
-        headers: { uuid: userId },
-      }).then(({ data }) => {
-        if (data) {
-          return data.isLike;
-        } else {
-          return false;
+      return API.get(`http://localhost:4000/article/${elem._id}/like`).then(
+        ({ data }) => {
+          if (data) {
+            return data.isLike;
+          } else {
+            return false;
+          }
         }
-      });
+      );
     },
   });
 
   const onLikeClick = () => {
-    if (!userId) {
+    if (!uuid) {
       alert("좋아요가 정상적으로 작동되지 않았습니다");
     }
     likeMutate();

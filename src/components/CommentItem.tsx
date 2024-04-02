@@ -1,6 +1,5 @@
 import { FormEventHandler, useState } from "react";
 import { TComment } from "../types/List";
-import { LocalStorage } from "../lib/localStorage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import { useParams } from "react-router-dom";
@@ -13,8 +12,7 @@ interface Props {
 }
 
 function CommentItem({ item }: Props) {
-  const localStorage = new LocalStorage();
-  const uuidUser = localStorage.get("uuidUser");
+  const uuid = useSelector((state: RootState) => state.uuid.uuid);
   const loginUser = useSelector((state: RootState) => state.user);
 
   const [commentMode, setCommentMode] = useState(false);
@@ -25,13 +23,9 @@ function CommentItem({ item }: Props) {
   const { mutate: commentMutate, error: commentMutateError } = useMutation({
     mutationKey: ["article", "comment", item._id],
     mutationFn: (): Promise<AxiosResponse> => {
-      return API.put(
-        `http://localhost:4000/article/comment/${item._id}`,
-        {
-          comment,
-        },
-        { headers: { uuid: uuidUser } }
-      );
+      return API.put(`http://localhost:4000/article/comment/${item._id}`, {
+        comment,
+      });
     },
     onSuccess() {
       queryClient.invalidateQueries({
@@ -45,9 +39,7 @@ function CommentItem({ item }: Props) {
   const { mutate: delMutate, error: delMutateError } = useMutation({
     mutationKey: ["article", "comment", "delete", id],
     mutationFn: (): Promise<AxiosResponse> =>
-      API.delete(`http://localhost:4000/article/${id}/comment/${item._id}`, {
-        headers: { uuid: uuidUser },
-      }),
+      API.delete(`http://localhost:4000/article/${id}/comment/${item._id}`),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article", "comment", id] });
       queryClient.invalidateQueries({ queryKey: ["article", id] });
@@ -72,7 +64,7 @@ function CommentItem({ item }: Props) {
     <div key={item._id}>
       {(loginUser.id
         ? item?.userInfo?.id === loginUser.id
-        : item.user === uuidUser) && (
+        : item.user === uuid) && (
         <>
           {!commentMode && (
             <button

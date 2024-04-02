@@ -2,14 +2,15 @@ import { Link, useNavigate } from "react-router-dom";
 import HomeBtn from "../components/HomeBtn";
 import { ChangeEventHandler, FormEventHandler, useState } from "react";
 import axios from "axios";
-import { LocalStorage } from "../lib/localStorage";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../store/features/user/userSlice";
+import { RootState } from "../store/store";
+import { saveToken } from "../store/features/token/tokenSlice";
 
 function Login() {
   const [userInfo, setUserInfo] = useState({ id: "", password: "" });
-  const localStorage = new LocalStorage();
   const dispatch = useDispatch();
+  const token = useSelector((state: RootState) => state.token);
   const navigate = useNavigate();
 
   const onChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -25,19 +26,18 @@ function Login() {
     axios
       .post(`http://localhost:4000/user/login`, userInfo)
       .then((res) => {
-        if (
-          localStorage.get("token") ||
-          localStorage.get("expiredAt") ||
-          localStorage.get("refreshToken")
-        ) {
+        if (token.accessToken || token.refreshToken || token.expiredAt) {
           alert("이미 로그인된 상태입니다.");
           return;
         }
 
-        localStorage.set("token", res.data.accessToken);
-        localStorage.set("expiredAt", res.data.expiredAt);
-        localStorage.set("refreshToken", res.data.refreshToken);
+        const savedToken = {
+          accessToken: res.data.accessToken,
+          refreshToken: res.data.refreshToken,
+          expiredAt: res.data.expiredAt,
+        };
 
+        dispatch(saveToken(savedToken));
         dispatch(setUser({ id: res.data.id, nickname: res.data.nickname }));
         navigate("/");
       })
