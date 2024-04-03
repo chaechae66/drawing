@@ -62,6 +62,8 @@ function AddDrawing() {
 
     setIsOpen(false);
     mutate(formData);
+    setPrevImg(null);
+    setImgFile(null);
     naviagte("/");
   };
 
