@@ -1,15 +1,30 @@
 import { AxiosResponse } from "axios";
-
 import { ChangeEventHandler, FormEventHandler, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RootState, store } from "../store/store";
 import { useSelector } from "react-redux";
 import { setupAxiosInstance } from "../lib/headerInstance";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useNavigate } from "react-router-dom";
 
 function AddDrawing() {
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [prevImg, setPrevImg] = useState<string | null>(null);
   const uuid = useSelector((state: RootState) => state.uuid.uuid);
+  const [isOpen, setIsOpen] = useState(false);
+  const naviagte = useNavigate();
 
   const queryClient = useQueryClient();
   const { mutate, isPending, isError, error } = useMutation({
@@ -45,34 +60,66 @@ function AddDrawing() {
     formData.append("drawingImage", imgFile!);
     formData.append("user", JSON.stringify(uuid));
 
+    setIsOpen(false);
     mutate(formData);
+    naviagte("/");
   };
 
-  if (isError) {
-    return (
-      <>
-        에러가 발생하였습니다 <br /> {error.message}
-      </>
-    );
-  }
   return (
-    <div className="w-60">
-      <h3 className="text-2xl">그림</h3>
-      <form onSubmit={onSubmit}>
-        <input type="file" accept=".jpg,.jpeg,.png" onChange={onLoadFile} />
-        <div>
-          <h4 className="text-xl">미리보기</h4>
-          {prevImg ? <img src={prevImg} /> : <p>미리보기 이미지 없음</p>}
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-700 rounded px-4 py-2 text-white"
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setIsOpen(true);
+          }}
         >
-          제출
-        </button>
-      </form>
-      {isPending && <p>전송 중...</p>}
-    </div>
+          그림 올리기
+        </Button>
+      </DialogTrigger>
+      {isOpen && (
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>그림 업로드</DialogTitle>
+            <DialogDescription>
+              모든 사람들에게 자신의 그림을 자랑해보아요.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={onSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="image" className="text-right">
+                  이미지 파일
+                </Label>
+                <Input
+                  id="image"
+                  type="file"
+                  onChange={onLoadFile}
+                  accept=".jpg,.jpeg,.png"
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            {prevImg && (
+              <AspectRatio ratio={1 / 1}>
+                <img
+                  src={prevImg}
+                  alt="미리보기 이미지"
+                  className="w-full sm:max-h-[375px] rounded-md object-cover"
+                />
+              </AspectRatio>
+            )}
+            <>
+              {isPending && <p className="text-gray-600">전송 중...</p>}
+              {isError && <div className="text-red-400">{error.message}</div>}
+            </>
+            <DialogFooter className="mt-2">
+              <Button type="submit">업로드</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      )}
+    </Dialog>
   );
 }
 

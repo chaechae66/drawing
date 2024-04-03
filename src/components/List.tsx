@@ -31,10 +31,14 @@ function List() {
   return (
     <div className="grow">
       <h3 className="text-2xl">그림 리스트</h3>
-      {data &&
-        (data as unknown as TList[]).map((elem: TList) => (
-          <ListItem elem={elem} key={elem._id} />
-        ))}
+      <p>사람들이 공유한 그림들을 구경해보아요.</p>
+      <hr className="mt-4" />
+      <div className="grid grid-cols-3 gap-2 mt-8 max-md:grid-cols-2 max-sm:grid-cols-1">
+        {data &&
+          (data as unknown as TList[]).map((elem: TList) => (
+            <ListItem elem={elem} key={elem._id} />
+          ))}
+      </div>
     </div>
   );
 }

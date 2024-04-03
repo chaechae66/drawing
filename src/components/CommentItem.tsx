@@ -6,6 +6,8 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState, store } from "../store/store";
 import { setupAxiosInstance } from "../lib/headerInstance";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   item: TComment;
@@ -67,60 +69,67 @@ function CommentItem({ item }: Props) {
 
   return (
     <div key={item._id}>
-      {(loginUser.id
-        ? item?.userInfo?.id === loginUser.id
-        : item.user === uuid) && (
-        <>
-          {!commentMode && (
-            <button
-              onClick={() => {
-                setCommentMode(true);
-              }}
-              className="bg-red-400 mr-2 p-1 text-white"
-            >
-              수정
-            </button>
+      <div className="flex justify-between items-center mt-3 mb-2">
+        <span className="text-base">
+          {item.userInfo?.nickname ? item.userInfo?.nickname : "게스트"}
+        </span>
+        <div>
+          {(loginUser.id
+            ? item?.userInfo?.id === loginUser.id
+            : item.user === uuid) && (
+            <>
+              {!commentMode && (
+                <Button
+                  variant="secondary"
+                  className="mr-2 px-2"
+                  onClick={() => {
+                    setCommentMode(true);
+                  }}
+                >
+                  수정
+                </Button>
+              )}
+              <Button
+                variant="secondary"
+                className="px-2"
+                onClick={() => {
+                  const isDel = confirm("진짜로 댓글을 삭제하겠습니까?");
+                  isDel && delMutate();
+                }}
+              >
+                삭제
+              </Button>
+            </>
           )}
-          <button
-            onClick={() => {
-              const isDel = confirm("진짜로 댓글을 삭제하겠습니까?");
-              isDel && delMutate();
-            }}
-            className="bg-slate-500 p-1 text-white"
-          >
-            삭제
-          </button>
-        </>
-      )}
-      <span>
-        {item.userInfo?.nickname ? item.userInfo?.nickname : "게스트"}
-      </span>
-      :{" "}
+        </div>
+      </div>
       <form onSubmit={onCommentSubmit}>
         {!commentMode ? (
-          <div>{item.body}</div>
+          <div className="border-[1px] border-solid border-gray-200 p-2 rounded">
+            {item.body}
+          </div>
         ) : (
-          <>
-            <input
+          <div className="flex">
+            <Input
               type="text"
               onChange={(e) => {
                 setComment(e.target.value);
               }}
               readOnly={!commentMode}
               defaultValue={item.body}
+              className="mr-2"
             />
-            <button className="bg-blue-700 mr-2 p-1 text-white">
-              수정완료
-            </button>
-            <button
+            <Button className="mr-1 px-2">수정완료</Button>
+            <Button
+              className="px-2"
+              variant="secondary"
               onClick={() => {
                 setCommentMode(false);
               }}
-              className="bg-slate-500 p-1 text-white"
             >
               수정취소
-            </button>
-          </>
+            </Button>
+          </div>
         )}
       </form>
     </div>

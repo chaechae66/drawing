@@ -1,17 +1,18 @@
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-function BackBtn() {
+function HomeBtn() {
   const navigate = useNavigate();
   return (
-    <button
-      className="block px-3 py-1 bg-blue-300 rounded"
+    <Button
+      variant="outline"
       onClick={() => {
         navigate("/");
       }}
     >
       홈으로
-    </button>
+    </Button>
   );
 }
 
-export default BackBtn;
+export default HomeBtn;
