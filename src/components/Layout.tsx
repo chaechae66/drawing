@@ -32,7 +32,7 @@ function Layout() {
   };
   return (
     <>
-      <header className="h-14 flex justify-center border-b-[1px] border-solid border-gray-200 px-2">
+      <header className="h-14 flex justify-center border-b-[1px] border-solid border-gray-200 px-2 sticky top-0 bg-white">
         <div className="w-[768px] flex items-center justify-between">
           <div>
             <Link to={"/"}>
