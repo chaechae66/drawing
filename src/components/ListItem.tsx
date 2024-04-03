@@ -15,7 +15,7 @@ function ListItem({ elem }: { elem: TList }) {
     mutationKey: ["article", "like", uuid, elem._id],
     mutationFn: (): Promise<AxiosResponse> =>
       setupAxiosInstance(store).post(
-        `http://localhost:4000/article/${elem._id}/like`,
+        `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${elem._id}/like`,
         {}
       ),
     onSuccess() {
@@ -29,7 +29,9 @@ function ListItem({ elem }: { elem: TList }) {
     queryKey: ["article", "like", uuid, elem._id],
     queryFn: async () => {
       return setupAxiosInstance(store)
-        .get(`http://localhost:4000/article/${elem._id}/like`)
+        .get(
+          `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${elem._id}/like`
+        )
         .then(({ data }) => {
           if (data) {
             return data.isLike;

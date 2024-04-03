@@ -26,7 +26,7 @@ function Detail() {
     mutationKey: ["article", "put"],
     mutationFn: (formData: FormData): Promise<AxiosResponse> =>
       setupAxiosInstance(store).post(
-        `http://localhost:4000/article/${id}`,
+        `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${id}`,
         formData
       ),
     onSuccess() {
@@ -38,7 +38,9 @@ function Detail() {
   const { mutate: delMutate } = useMutation({
     mutationKey: ["article", "delete"],
     mutationFn: (): Promise<AxiosResponse> =>
-      setupAxiosInstance(store).delete(`http://localhost:4000/article/${id}`),
+      setupAxiosInstance(store).delete(
+        `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${id}`
+      ),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },
@@ -81,7 +83,9 @@ function Detail() {
     queryKey: ["article", id],
     queryFn: async (): Promise<TList> => {
       return axios
-        .get(`http://localhost:4000/article/${id}`)
+        .get(
+          `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${id}`
+        )
         .then((data) => data.data.data);
     },
   });
@@ -90,7 +94,9 @@ function Detail() {
     queryKey: ["article", "like", uuid, id],
     queryFn: async (): Promise<TList> => {
       return setupAxiosInstance(store)
-        .get(`http://localhost:4000/article/${id}/like`)
+        .get(
+          `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${id}/like`
+        )
         .then(({ data }) => {
           if (data) {
             return data.isLike;
@@ -105,7 +111,9 @@ function Detail() {
     queryKey: ["article", "comment", id],
     queryFn: async (): Promise<TComment[]> => {
       return axios
-        .get(`http://localhost:4000/article/${id}/comment`)
+        .get(
+          `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${id}/comment`
+        )
         .then(({ data: { data } }) => {
           if (data) {
             return data.sort(
@@ -123,7 +131,7 @@ function Detail() {
     mutationKey: ["article", "like", uuid, id],
     mutationFn: (): Promise<AxiosResponse> =>
       setupAxiosInstance(store).post(
-        `http://localhost:4000/article/${id}/like`,
+        `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${id}/like`,
         {}
       ),
     onSuccess() {
@@ -139,7 +147,7 @@ function Detail() {
     mutationKey: ["article", "comment", id],
     mutationFn: (): Promise<AxiosResponse> =>
       setupAxiosInstance(store).post(
-        `http://localhost:4000/article/${id}/comment`,
+        `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${id}/comment`,
         {
           comment,
         }

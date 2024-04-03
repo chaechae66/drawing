@@ -8,7 +8,9 @@ function List() {
     queryFn: async (): Promise<AxiosResponse> => {
       const {
         data: { data },
-      } = await axios.get("http://localhost:4000/article");
+      } = await axios.get(
+        "http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article"
+      );
 
       return data.sort(
         (a: TList, b: TList) => Date.parse(b.regDate) - Date.parse(a.regDate)
