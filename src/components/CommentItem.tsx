@@ -26,7 +26,7 @@ function CommentItem({ item }: Props) {
     mutationKey: ["article", "comment", item._id],
     mutationFn: (): Promise<AxiosResponse> => {
       return setupAxiosInstance(store).put(
-        `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/comment/${item._id}`,
+        `https://dradndn.site/article/comment/${item._id}`,
         {
           comment,
         }
@@ -45,7 +45,7 @@ function CommentItem({ item }: Props) {
     mutationKey: ["article", "comment", "delete", id],
     mutationFn: (): Promise<AxiosResponse> =>
       setupAxiosInstance(store).delete(
-        `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/article/${id}/comment/${item._id}`
+        `https://dradndn.site/article/${id}/comment/${item._id}`
       ),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article", "comment", id] });

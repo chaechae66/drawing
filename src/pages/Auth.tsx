@@ -62,10 +62,7 @@ function Auth() {
       return;
     }
     axios
-      .post(
-        `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/user/signup`,
-        signupUserInfo
-      )
+      .post(`https://dradndn.site/user/signup`, signupUserInfo)
       .then(() => {
         setSignupUserInfo({
           id: "",
@@ -92,10 +89,7 @@ function Auth() {
       return;
     }
     axios
-      .post(
-        `http://ec2-3-37-14-37.ap-northeast-2.compute.amazonaws.com:4000/user/login`,
-        loginUserInfo
-      )
+      .post(`https://dradndn.site/user/login`, loginUserInfo)
       .then((res) => {
         if (token.accessToken || token.refreshToken || token.expiredAt) {
           alert("이미 로그인된 상태입니다.");
