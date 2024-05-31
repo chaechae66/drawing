@@ -7,7 +7,7 @@ import { FormEventHandler, useRef, useState } from "react";
 import CommentItem from "../components/CommentItem";
 import { useSelector } from "react-redux";
 import { RootState, store } from "../store/store";
-import { setupAxiosInstance } from "../lib/headerInstance";
+import { setupAxiosInstance } from "../lib/fetchWithInterceptors";
 import { Button } from "@/components/ui/button";
 import { Heart, MailWarning, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";

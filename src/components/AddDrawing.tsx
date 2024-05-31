@@ -3,7 +3,7 @@ import { ChangeEventHandler, FormEventHandler, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RootState, store } from "../store/store";
 import { useSelector } from "react-redux";
-import { setupAxiosInstance } from "../lib/headerInstance";
+import { setupAxiosInstance } from "../lib/fetchWithInterceptors";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

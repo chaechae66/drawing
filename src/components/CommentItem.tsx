@@ -5,7 +5,7 @@ import { AxiosResponse } from "axios";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState, store } from "../store/store";
-import { setupAxiosInstance } from "../lib/headerInstance";
+import { setupAxiosInstance } from "../lib/fetchWithInterceptors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
