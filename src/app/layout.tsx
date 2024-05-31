@@ -22,7 +22,7 @@ export default function RootLayout({
         <Providers>
           <UUIDProvider>
             <Header />
-            <section className="px-2 min-h-dvh w-[768px] flex justify-center">
+            <section className="px-2 min-h-dvh w-dvw flex justify-center">
               <div id="root">{children}</div>
             </section>
             <footer className="bg-gray-200 flex items-center justify-center h-20">

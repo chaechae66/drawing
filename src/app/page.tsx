@@ -1,3 +1,9 @@
+import List from "./_components/List";
+
 export default function Home() {
-  return <div>메인페이지</div>;
+  return (
+    <section className="w-[768px] py-10 pb-14">
+      <List />
+    </section>
+  );
 }

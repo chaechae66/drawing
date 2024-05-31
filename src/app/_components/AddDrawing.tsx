@@ -1,9 +1,10 @@
-import { AxiosResponse } from "axios";
+"use client";
+
 import { ChangeEventHandler, FormEventHandler, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RootState, store } from "../../store/store";
 import { useSelector } from "react-redux";
-import { setupAxiosInstance } from "../../lib/headerInstance";
+import fetchWithInterceptors from "../../lib/fetchWithInterceptors";
 import { Button } from "../../../@/components/ui/button";
 import {
   Dialog,
@@ -17,20 +18,29 @@ import {
 import { Input } from "../../../@/components/ui/input";
 import { Label } from "../../../@/components/ui/label";
 import { AspectRatio } from "../../../@/components/ui/aspect-ratio";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
+import { TList } from "../../types/List";
 
 function AddDrawing() {
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [prevImg, setPrevImg] = useState<string | null>(null);
   const uuid = useSelector((state: RootState) => state.uuid.uuid);
   const [isOpen, setIsOpen] = useState(false);
-  const naviagte = useNavigate();
+  const router = useRouter();
 
   const queryClient = useQueryClient();
   const { mutate, isPending, isError, error } = useMutation({
     mutationKey: ["article"],
-    mutationFn: (formData: FormData): Promise<AxiosResponse> =>
-      setupAxiosInstance(store).post("/article", formData),
+    mutationFn: (formData: FormData): Promise<Response> =>
+      fetchWithInterceptors<TList>(
+        "http://localhost:3000/api/article",
+        {
+          method: "POST",
+          body: formData,
+          next: { revalidate: 0 },
+        },
+        store
+      ),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },
@@ -64,7 +74,7 @@ function AddDrawing() {
     mutate(formData);
     setPrevImg(null);
     setImgFile(null);
-    naviagte("/");
+    router.push("/");
   };
 
   return (
@@ -87,7 +97,7 @@ function AddDrawing() {
               모든 사람들에게 자신의 그림을 자랑해보아요.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={onSubmit}>
+          <form onSubmit={onSubmit} encType="multipart/form-data">
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="image" className="text-right">
@@ -126,3 +136,4 @@ function AddDrawing() {
 }
 
 export default AddDrawing;
+export const dynamic = "force-dynamic";
