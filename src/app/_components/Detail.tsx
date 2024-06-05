@@ -1,11 +1,15 @@
 "use client";
 
 import { Button } from "../../../@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { MailWarning, MessageSquare } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Heart, MailWarning, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { TList } from "src/types/List";
+import { TList, Tlike } from "src/types/List";
 import HomeBtn from "./HomeBtn";
+import { useSelector } from "react-redux";
+import { RootState, store } from "src/store/store";
+import fetchWithInterceptors from "src/lib/fetchWithInterceptors";
+import { useRef } from "react";
 
 interface Props {
   id: string;
@@ -13,6 +17,11 @@ interface Props {
 
 export default function Detail({ id }: Props) {
   const router = useRouter();
+  const loginUser = useSelector((state: RootState) => state.user);
+  const uuid = useSelector((state: RootState) => state.uuid.uuid);
+  const queryClient = useQueryClient();
+  const imageRef = useRef<HTMLInputElement | null>(null);
+
   const {
     data: detail,
     isLoading,
@@ -27,6 +36,94 @@ export default function Detail({ id }: Props) {
         .then((data) => data.data);
     },
   });
+
+  const { data: isLike, error: likeError } = useQuery({
+    queryKey: ["article", "like", uuid, id],
+    queryFn: async () => {
+      return fetchWithInterceptors<Tlike>(
+        `http://localhost:3000/api/article/like?id=${id}`,
+        {
+          method: "GET",
+        },
+        store
+      ).then(({ data }) => {
+        if (data) {
+          return data.isLike;
+        } else {
+          return false;
+        }
+      });
+    },
+  });
+
+  const { mutate: likeMutate, error: likeMutateError } = useMutation({
+    mutationKey: ["article", "like", uuid, id],
+    mutationFn: (): Promise<Response> =>
+      fetchWithInterceptors<Tlike>(
+        `http://localhost:3000/api/article/like?id=${id}`,
+        {
+          method: "POST",
+          body: null,
+        },
+        store
+      ),
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ["article", "like", uuid, id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["article", id] });
+      queryClient.invalidateQueries({ queryKey: ["article"] });
+    },
+  });
+
+  const { mutate } = useMutation({
+    mutationKey: ["article", "put"],
+    mutationFn: (formData: FormData): Promise<Response> =>
+      fetchWithInterceptors(
+        `http://localhost:3000/api/article/detail?id=${id}`,
+        {
+          method: "PUT",
+          body: formData,
+          next: { revalidate: 0 },
+        },
+        store
+      ),
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["article", id] });
+      queryClient.invalidateQueries({ queryKey: ["article"] });
+    },
+  });
+
+  const { mutate: delMutate } = useMutation({
+    mutationKey: ["article", "delete"],
+    mutationFn: (): Promise<Response> =>
+      fetchWithInterceptors(
+        `http://localhost:3000/api/article/detail?id=${id}`,
+        { method: "DELETE" },
+        store
+      ),
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["article"] });
+    },
+  });
+
+  const onLoadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files![0];
+    if (!file) {
+      return;
+    }
+    const formData = new FormData();
+    formData.append("drawingImage", file!);
+    mutate(formData);
+  };
+
+  const handleUpdate = () => {
+    const isUpdate = confirm("이미지를 정말로 수정하시겠어요?");
+    if (!isUpdate) {
+      return;
+    }
+    imageRef.current!.click();
+  };
 
   if (isLoading) {
     return (
@@ -63,6 +160,28 @@ export default function Detail({ id }: Props) {
     );
   }
 
+  if (likeError || likeMutateError) {
+    alert("좋아요가 정상적으로 작동되지 않았습니다");
+  }
+
+  const onLikeClick = () => {
+    if (!uuid) {
+      alert("좋아요가 정상적으로 작동되지 않았습니다");
+    }
+    likeMutate();
+  };
+
+  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const isDelete = confirm("이미지를 정말로 삭제하시겠어요?");
+    if (!isDelete) {
+      return;
+    }
+    delMutate();
+    alert("삭제가 완료되었습니다.");
+    router.push("/");
+  };
+
   return (
     <main className="flex justify-center items-center w-dvw">
       <div className="flex flex-col p-6 w-[500px] mb-8">
@@ -70,7 +189,7 @@ export default function Detail({ id }: Props) {
           <>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl">디테일페이지</h2>
-              {/* <div>
+              <div>
                 {(loginUser.id
                   ? detail?.userInfo?.id === loginUser.id
                   : detail.user === uuid) && (
@@ -94,7 +213,7 @@ export default function Detail({ id }: Props) {
                     </Button>
                   </>
                 )}
-              </div> */}
+              </div>
             </div>
             <img
               className="w-[500px] h-[500px] object-cover border-[1px] border-solid border-gray-200 max-sm:h-[400px]"
@@ -105,14 +224,14 @@ export default function Detail({ id }: Props) {
               <div className="text-gray-500">{detail.regDate.slice(0, 10)}</div>
               <div className="flex">
                 <div
-                  //   onClick={onLikeClick}
+                  onClick={onLikeClick}
                   className="flex items-center w-10 justify-between mr-2"
                 >
-                  {/* {isLike ? (
+                  {isLike ? (
                     <Heart fill="#000" size={28} />
                   ) : (
                     <Heart size={28} />
-                  )}{" "} */}
+                  )}{" "}
                   {detail.likeCount}
                 </div>
                 <div className="flex items-center w-10 justify-between">
