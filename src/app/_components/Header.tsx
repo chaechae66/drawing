@@ -20,6 +20,7 @@ import { removeToken } from "../../store/features/token/tokenSlice";
 import { removeUser } from "../../store/features/user/userSlice";
 import { useQueryClient } from "@tanstack/react-query";
 import AddDrawing from "../_components/AddDrawing";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
   const user = useSelector((state: RootState) => state.user);
@@ -33,6 +34,7 @@ export default function Header() {
     dispatch(removeUser());
     queryClient.invalidateQueries({ queryKey: ["article"] });
   };
+  const pathname = usePathname();
 
   return (
     <header className="h-14 flex justify-center border-b-[1px] border-solid border-gray-200 px-2 sticky top-0 bg-white">
@@ -43,37 +45,44 @@ export default function Header() {
           </Link>
         </div>
         <div className="mr-2 flex items-center">
-          {!user.id || !user.nickname ? (
-            <Link href={"/auth"}>
-              <Button>로그인</Button>
-            </Link>
-          ) : (
+          {pathname !== "/auth" ? (
             <>
-              <DropdownMenu open={open} onOpenChange={setOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <div>
-                      {user.id && user.nickname && <>{user.nickname}님</>}
-                    </div>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[100px]">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                      <div onClick={onLogOut} className="flex">
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <div>로그아웃</div>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {!user.id || !user.nickname ? (
+                <Link href={"/auth"}>
+                  <Button>로그인</Button>
+                </Link>
+              ) : (
+                <>
+                  <DropdownMenu open={open} onOpenChange={setOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <div>
+                          {user.id && user.nickname && <>{user.nickname}님</>}
+                        </div>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[100px]">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem>
+                          <div onClick={onLogOut} className="flex">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <div>로그아웃</div>
+                          </div>
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
+              <div className="ml-2">
+                {" "}
+                <AddDrawing />
+              </div>
             </>
+          ) : (
+            <></>
           )}
-          <div className="ml-2">
-            <AddDrawing />
-          </div>
         </div>
       </div>
     </header>

@@ -19,9 +19,11 @@
     "@tanstack/react-query": "^5.28.6",
     "@tanstack/react-query-devtools": "^5.28.6",
     "axios": "^1.6.8",
+    "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
     "lucide": "^0.364.0",
     "lucide-react": "^0.364.0",
     "moment": "^2.30.1",
@@ -38,6 +40,8 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.66",
