@@ -1,10 +1,12 @@
 "use server";
 
-import Article from "../../../lib/model/article";
+import Article from "../_model/article";
 import dbConnect from "../../../lib/db/dbConnect";
 import dotenv from "dotenv";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { authJWT } from "../_utils/jwt";
+import User from "../_model/user";
 
 dotenv.config();
 
@@ -36,6 +38,9 @@ async function GET() {
 
 async function POST(req: NextRequest) {
   const uuid = headers().get("uuid");
+  const token = headers().get("authorization");
+
+  const userID = token && authJWT(token!);
 
   try {
     const formData = await req.formData();
@@ -73,19 +78,24 @@ async function POST(req: NextRequest) {
     const arrayBuffer = await drawingImage.arrayBuffer();
     const base64String = Buffer.from(arrayBuffer).toString("base64");
 
-    // const userInfo = await User.findOne({ id: userID });
-    // if (userID && !userInfo) {
-    //   res.status(401).send({
-    //     success: false,
-    //     message: "유저 정보가 일치하지 않습니다.",
-    //   });
-    //   return;
-    // }
+    const userInfo = await User.findOne({ id: userID });
+    if (userID && !userInfo) {
+      return NextResponse.json(
+        {
+          success: false,
+          data: "유저 정보가 일치하지 않습니다.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
     const article = new Article({
       data: base64String,
       contentType: drawingImage.type,
       user: uuid,
-      userInfo: null,
+      userInfo: token ? userInfo : null,
       regDate: Date.now(),
     });
     await article.save();

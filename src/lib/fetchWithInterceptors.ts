@@ -103,8 +103,6 @@ export default async function fetchWithInterceptors<T>(
     options = modifiedRequest.options || options;
   }
 
-  console.log(11, options);
-
   return fetch(url, options)
     .then(async (response) => {
       if (responseInterceptor as ResponseInterceptor<T>) {
