@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { AxiosResponse } from "axios";
 import { RootState, store } from "../store/store";
 import { useSelector } from "react-redux";
-import { setupAxiosInstance } from "../lib/fetchWithInterceptors";
+import { setupAxiosInstance } from "../lib/headerInstance";
 import { Heart, MessageSquare } from "lucide-react";
 
 function ListItem({ elem }: { elem: TList }) {

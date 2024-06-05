@@ -1,12 +1,11 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { TList } from "../../types/List";
+import { TList, Tlike } from "../../types/List";
 import Link from "next/link";
-import { AxiosResponse } from "axios";
 import { RootState, store } from "../../store/store";
 import { useSelector } from "react-redux";
-import { setupAxiosInstance } from "../../lib/fetchWithInterceptors";
+import fetchWithInterceptors from "../../lib/fetchWithInterceptors";
 import { Heart, MessageSquare } from "lucide-react";
 
 function ListItem({ elem }: { elem: TList }) {
@@ -15,10 +14,14 @@ function ListItem({ elem }: { elem: TList }) {
 
   const { mutate: likeMutate, error: likeMutateError } = useMutation({
     mutationKey: ["article", "like", uuid, elem._id],
-    mutationFn: (): Promise<AxiosResponse> =>
-      setupAxiosInstance(store).post(
-        `https://dradndn.site/article/${elem._id}/like`,
-        {}
+    mutationFn: (): Promise<Response> =>
+      fetchWithInterceptors<Tlike>(
+        `http://localhost:3000/api/article/like?id=${elem._id}`,
+        {
+          method: "POST",
+          body: null,
+        },
+        store
       ),
     onSuccess() {
       queryClient.invalidateQueries({
@@ -30,15 +33,19 @@ function ListItem({ elem }: { elem: TList }) {
   const { data: isLike, error: likeError } = useQuery({
     queryKey: ["article", "like", uuid, elem._id],
     queryFn: async () => {
-      return setupAxiosInstance(store)
-        .get(`https://dradndn.site/article/${elem._id}/like`)
-        .then(({ data }) => {
-          if (data) {
-            return data.isLike;
-          } else {
-            return false;
-          }
-        });
+      return fetchWithInterceptors<Tlike>(
+        `http://localhost:3000/api/article/like?id=${elem._id}`,
+        {
+          method: "GET",
+        },
+        store
+      ).then(({ data }) => {
+        if (data) {
+          return data.isLike;
+        } else {
+          return false;
+        }
+      });
     },
   });
 
@@ -49,8 +56,6 @@ function ListItem({ elem }: { elem: TList }) {
     likeMutate();
   };
   if (likeMutateError || likeError) {
-    console.log(11, likeMutateError);
-    console.log(22, likeError);
     alert("좋아요가 정상적으로 작동되지 않았습니다");
   }
 
