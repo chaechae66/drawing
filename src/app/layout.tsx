@@ -22,10 +22,15 @@ export default function RootLayout({
         <Providers>
           <UUIDProvider>
             <Header />
-            <section className="px-2 min-h-dvh w-dvw flex justify-center">
-              <div id="root">{children}</div>
+            <section>
+              <div
+                id="root"
+                className="px-2 min-h-[calc(100dvh-theme(space.36))] w-dvw flex justify-center"
+              >
+                {children}
+              </div>
             </section>
-            <footer className="bg-gray-200 flex items-center justify-center h-20">
+            <footer className="bg-gray-200 flex items-center justify-center h-[calc(theme(space.20)+0.5rem)]">
               copyright&copy; 2024 All rights reserved Park Chae Yeon
             </footer>
           </UUIDProvider>
