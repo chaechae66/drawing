@@ -10,10 +10,10 @@ export async function generateStaticParams() {
     id: post._id,
   }));
 }
-export default function detailPage({ params }: { params: { id: string } }) {
+export default function detailPage() {
   return (
     <>
-      <Detail id={params.id} />
+      <Detail />
     </>
   );
 }
