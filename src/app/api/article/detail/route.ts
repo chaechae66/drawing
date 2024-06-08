@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { authJWT } from "../../_utils/jwt";
 import Like from "../../_model/list";
 import { ObjectId } from "mongodb";
+import Comment from "../../_model/comment";
 
 export async function GET(req: NextRequest) {
   const imgId = req.nextUrl.searchParams.get("id");
@@ -191,7 +192,7 @@ export async function DELETE(req: NextRequest) {
     await Promise.all([
       Article.findByIdAndDelete(imgId),
       Like.deleteMany({ articleID: new ObjectId(imgId) }),
-      // Comment.deleteMany({ articleID: new ObjectId(req.params.imgID) }),
+      Comment.deleteMany({ articleID: new ObjectId(imgId) }),
     ]);
     return NextResponse.json(
       {

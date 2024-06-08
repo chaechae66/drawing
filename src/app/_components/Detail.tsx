@@ -3,24 +3,24 @@
 import { Button } from "../../../@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart, MailWarning, MessageSquare } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { TList, Tlike } from "src/types/List";
+import { useParams, useRouter } from "next/navigation";
+import { TComment, TList, Tlike } from "src/types/List";
 import HomeBtn from "./HomeBtn";
 import { useSelector } from "react-redux";
 import { RootState, store } from "src/store/store";
 import fetchWithInterceptors from "src/lib/fetchWithInterceptors";
-import { useRef } from "react";
+import { FormEventHandler, useRef, useState } from "react";
+import { Input } from "../../../@/components/ui/input";
+import CommentItem from "./CommentItem";
 
-interface Props {
-  id: string;
-}
-
-export default function Detail({ id }: Props) {
+export default function Detail() {
   const router = useRouter();
   const loginUser = useSelector((state: RootState) => state.user);
   const uuid = useSelector((state: RootState) => state.uuid.uuid);
   const queryClient = useQueryClient();
   const imageRef = useRef<HTMLInputElement | null>(null);
+  const [comment, setComment] = useState("");
+  const { id } = useParams() as { id: string };
 
   const {
     data: detail,
@@ -125,6 +125,44 @@ export default function Detail({ id }: Props) {
     imageRef.current!.click();
   };
 
+  const { mutate: commentMutate, error: commentMutateError } = useMutation({
+    mutationKey: ["article", "comment", id],
+    mutationFn: (): Promise<Response> =>
+      fetchWithInterceptors(
+        `http://localhost:3000/api/article/comment?id=${id}`,
+        { method: "POST", body: JSON.stringify(comment) },
+        store
+      ),
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ["article", "comment", id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["article", id] });
+      queryClient.invalidateQueries({ queryKey: ["article"] });
+      setComment("");
+    },
+  });
+
+  const { data: comments, error: commentError } = useQuery({
+    queryKey: ["article", "comment", id],
+    queryFn: async (): Promise<TComment[]> => {
+      return fetch(`http://localhost:3000/api/article/comment?id=${id}`)
+        .then((data) => {
+          return data.json();
+        })
+        .then(({ data }) => {
+          if (data) {
+            return data.sort(
+              (a: TList, b: TList) =>
+                Date.parse(b.regDate) - Date.parse(a.regDate)
+            );
+          } else {
+            return null;
+          }
+        });
+    },
+  });
+
   if (isLoading) {
     return (
       <main className="w-dvw h-dvh flex items-center justify-center">
@@ -164,6 +202,10 @@ export default function Detail({ id }: Props) {
     alert("좋아요가 정상적으로 작동되지 않았습니다");
   }
 
+  if (commentMutateError || commentError) {
+    alert("댓글 작성에 실패하였습니다.");
+  }
+
   const onLikeClick = () => {
     if (!uuid) {
       alert("좋아요가 정상적으로 작동되지 않았습니다");
@@ -180,6 +222,11 @@ export default function Detail({ id }: Props) {
     delMutate();
     alert("삭제가 완료되었습니다.");
     router.push("/");
+  };
+
+  const onCommentSubmit: FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+    commentMutate();
   };
 
   return (
@@ -239,7 +286,7 @@ export default function Detail({ id }: Props) {
                 </div>
               </div>
             </div>
-            {/* <form onSubmit={onCommentSubmit} className="flex mt-3">
+            <form onSubmit={onCommentSubmit} className="flex mt-3">
               <Input
                 type="text"
                 value={comment}
@@ -249,7 +296,7 @@ export default function Detail({ id }: Props) {
                 placeholder="댓글입력해주세요"
               />
               <Button type="submit">댓글 등록</Button>
-            </form> */}
+            </form>
           </>
         ) : (
           <div>
@@ -257,13 +304,13 @@ export default function Detail({ id }: Props) {
             <p>404 : 존재하지 않는 페이지입니다.</p>
           </div>
         )}
-        {/* <div className="mb-6">
+        <div className="mb-6">
           {comments && comments?.length !== 0 ? (
             comments?.map((item) => <CommentItem item={item} key={item._id} />)
           ) : (
             <div className="self-start mt-2">작성된 댓글이 없습니다.</div>
           )}
-        </div> */}
+        </div>
         <hr className="mb-10" />
         <HomeBtn />
       </div>
