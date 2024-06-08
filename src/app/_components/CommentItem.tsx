@@ -45,7 +45,7 @@ function CommentItem({ item }: Props) {
   });
 
   const { mutate: delMutate, error: delMutateError } = useMutation({
-    mutationKey: ["article", "comment", "delete", item._id],
+    mutationKey: ["article", "comment", "delete", item.articleID],
     mutationFn: (): Promise<Response> =>
       fetchWithInterceptors(
         `http://localhost:3000/api/article/comment/detail?id=${item.articleID}&comment=${item._id}`,
@@ -56,7 +56,7 @@ function CommentItem({ item }: Props) {
       ),
     onSuccess() {
       queryClient.invalidateQueries({
-        queryKey: ["article", "comment", item._id],
+        queryKey: ["article", "comment", item.articleID],
       });
       queryClient.invalidateQueries({ queryKey: ["article", item.articleID] });
     },
