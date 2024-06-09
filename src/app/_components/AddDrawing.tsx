@@ -37,7 +37,7 @@ function AddDrawing() {
         {
           method: "POST",
           body: formData,
-          next: { revalidate: 0 },
+          next: { revalidate: 0, tags: ["article"] },
         },
         store
       ),

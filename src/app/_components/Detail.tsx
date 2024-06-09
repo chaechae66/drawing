@@ -29,7 +29,7 @@ export default function Detail() {
   } = useQuery({
     queryKey: ["article", id],
     queryFn: async (): Promise<TList> => {
-      return fetch(`http://localhost:3000/api/article/detail?id=${id}`, {
+      return fetch(`http://localhost:3000/api/article/${id}`, {
         method: "GET",
       })
         .then((data) => data.json())
@@ -80,7 +80,7 @@ export default function Detail() {
     mutationKey: ["article", "put"],
     mutationFn: (formData: FormData): Promise<Response> =>
       fetchWithInterceptors(
-        `http://localhost:3000/api/article/detail?id=${id}`,
+        `http://localhost:3000/api/article/${id}`,
         {
           method: "PUT",
           body: formData,
@@ -98,7 +98,7 @@ export default function Detail() {
     mutationKey: ["article", "delete"],
     mutationFn: (): Promise<Response> =>
       fetchWithInterceptors(
-        `http://localhost:3000/api/article/detail?id=${id}`,
+        `http://localhost:3000/api/article/${id}`,
         { method: "DELETE" },
         store
       ),

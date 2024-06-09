@@ -6,8 +6,11 @@ import Like from "../../_model/list";
 import { ObjectId } from "mongodb";
 import Comment from "../../_model/comment";
 
-export async function GET(req: NextRequest) {
-  const imgId = req.nextUrl.searchParams.get("id");
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id: imgId } = params;
   if (!imgId) {
     return NextResponse.json(
       {
@@ -43,8 +46,11 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function PUT(req: NextRequest) {
-  const imgId = req.nextUrl.searchParams.get("id");
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id: imgId } = params;
 
   const uuid = headers().get("uuid");
   const token = headers().get("authorization");
@@ -146,8 +152,11 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
-  const imgId = req.nextUrl.searchParams.get("id");
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id: imgId } = params;
 
   const uuid = headers().get("uuid");
   const token = headers().get("authorization");
