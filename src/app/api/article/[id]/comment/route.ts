@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import Comment from "../../_model/comment";
+import Comment from "../../../_model/comment";
 import { headers } from "next/headers";
-import { authJWT } from "../../_utils/jwt";
-import User from "../../_model/user";
-import Article from "../../_model/article";
+import { authJWT } from "../../../_utils/jwt";
+import User from "../../../_model/user";
+import Article from "../../../_model/article";
 
-export async function GET(req: NextRequest) {
-  const imgId = req.nextUrl.searchParams.get("id");
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id: imgId } = params;
 
   if (!imgId) {
     return NextResponse.json(
@@ -47,8 +50,11 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
-  const imgId = req.nextUrl.searchParams.get("id");
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id: imgId } = params;
 
   const uuid = headers().get("uuid");
   const token = headers().get("authorization");

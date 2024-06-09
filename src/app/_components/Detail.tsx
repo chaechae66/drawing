@@ -129,7 +129,7 @@ export default function Detail() {
     mutationKey: ["article", "comment", id],
     mutationFn: (): Promise<Response> =>
       fetchWithInterceptors(
-        `http://localhost:3000/api/article/comment?id=${id}`,
+        `http://localhost:3000/api/article/${id}/comment`,
         { method: "POST", body: JSON.stringify(comment) },
         store
       ),
@@ -146,7 +146,7 @@ export default function Detail() {
   const { data: comments, error: commentError } = useQuery({
     queryKey: ["article", "comment", id],
     queryFn: async (): Promise<TComment[]> => {
-      return fetch(`http://localhost:3000/api/article/comment?id=${id}`)
+      return fetch(`http://localhost:3000/api/article/${id}/comment`)
         .then((data) => {
           return data.json();
         })

@@ -25,7 +25,7 @@ function CommentItem({ item }: Props) {
     mutationKey: ["article", "comment", item._id],
     mutationFn: (): Promise<Response> => {
       return fetchWithInterceptors(
-        `http://localhost:3000/api/article/comment/detail?id=${item.articleID}&comment=${item._id}`,
+        `http://localhost:3000/api/article/${item.articleID}/comment/${item._id}`,
         {
           method: "PUT",
           body: JSON.stringify(comment),
@@ -48,7 +48,7 @@ function CommentItem({ item }: Props) {
     mutationKey: ["article", "comment", "delete", item.articleID],
     mutationFn: (): Promise<Response> =>
       fetchWithInterceptors(
-        `http://localhost:3000/api/article/comment/detail?id=${item.articleID}&comment=${item._id}`,
+        `http://localhost:3000/api/article/${item.articleID}/comment/${item._id}`,
         {
           method: "DELETE",
         },

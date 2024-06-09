@@ -5,9 +5,11 @@ import Comment from "src/app/api/_model/comment";
 import User from "src/app/api/_model/user";
 import { authJWT } from "src/app/api/_utils/jwt";
 
-export async function PUT(req: NextRequest) {
-  const imgId = req.nextUrl.searchParams.get("id");
-  const commentId = req.nextUrl.searchParams.get("comment");
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string; comment: string } }
+) {
+  const { id: imgId, comment: commentId } = params;
   const commentBody = await req.json();
 
   const uuid = headers().get("uuid");
@@ -110,9 +112,11 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
-  const imgId = req.nextUrl.searchParams.get("id");
-  const commentId = req.nextUrl.searchParams.get("comment");
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string; comment: string } }
+) {
+  const { id: imgId, comment: commentId } = params;
 
   const uuid = headers().get("uuid");
   const token = headers().get("authorization");
