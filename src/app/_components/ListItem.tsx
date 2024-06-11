@@ -7,6 +7,7 @@ import { RootState, store } from "../../store/store";
 import { useSelector } from "react-redux";
 import fetchWithInterceptors from "../../lib/fetchWithInterceptors";
 import { Heart, MessageSquare } from "lucide-react";
+import Image from "next/image";
 
 function ListItem({ elem }: { elem: TList }) {
   const uuid = useSelector((state: RootState) => state.uuid.uuid);
@@ -66,11 +67,14 @@ function ListItem({ elem }: { elem: TList }) {
       </p>
       <span className="text-gray-500 text-xs">{elem.regDate.slice(0, 10)}</span>
       <Link href={`detail/${elem._id}`}>
-        <img
-          className="w-full h-[235px] rounded-md object-cover mb-2 border-solid border-gray-200 border-[1px]"
-          src={`data:image/${elem.contentType};base64,${elem.data}`}
-          alt="그림 이미지"
-        />
+        <div className="w-full h-[235px] relative">
+          <Image
+            fill={true}
+            className="rounded-md object-cover mb-2 border-solid border-gray-200 border-[1px]"
+            src={`data:image/${elem.contentType};base64,${elem.data}`}
+            alt="그림 이미지"
+          />
+        </div>
       </Link>
 
       <div className="flex">

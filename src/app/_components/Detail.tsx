@@ -12,6 +12,7 @@ import fetchWithInterceptors from "src/lib/fetchWithInterceptors";
 import { FormEventHandler, useRef, useState } from "react";
 import { Input } from "../../../@/components/ui/input";
 import CommentItem from "./CommentItem";
+import Image from "next/image";
 
 export default function Detail() {
   const router = useRouter();
@@ -262,8 +263,11 @@ export default function Detail() {
                 )}
               </div>
             </div>
-            <img
-              className="w-[500px] h-[500px] object-cover border-[1px] border-solid border-gray-200 max-sm:h-[400px]"
+            <Image
+              width={500}
+              height={500}
+              sizes="(max-width: 500px) 100vw, 100vw"
+              className="w-[500px] h-[500px] object-cover border-[1px] border-solid border-gray-200"
               src={`data:image/${detail.contentType};base64,${detail.data}`}
               alt="그림 이미지"
             />

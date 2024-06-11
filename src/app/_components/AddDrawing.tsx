@@ -20,6 +20,7 @@ import { Label } from "../../../@/components/ui/label";
 import { AspectRatio } from "../../../@/components/ui/aspect-ratio";
 import { useRouter } from "next/navigation";
 import { TList } from "../../types/List";
+import Image from "next/image";
 
 function AddDrawing() {
   const [imgFile, setImgFile] = useState<File | null>(null);
@@ -114,7 +115,8 @@ function AddDrawing() {
             </div>
             {prevImg && (
               <AspectRatio ratio={1 / 1}>
-                <img
+                <Image
+                  fill={true}
                   src={prevImg}
                   alt="미리보기 이미지"
                   className="w-full sm:max-h-[375px] rounded-md object-cover"
