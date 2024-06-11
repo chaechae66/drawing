@@ -54,13 +54,16 @@ const responseInterceptor = async (
     return response.json();
   } else if (response.status === 401) {
     if (moment(Number(expireAt)).diff(moment()) < 0) {
-      const res = await fetch(`http://localhost:3000/api/user/retoken`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          refreshToken,
-        },
-      });
+      const res = await fetch(
+        `h${process.env.NEXT_PUBLIC_BASE_URL}user/retoken`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            refreshToken,
+          },
+        }
+      );
 
       if (res.status == 200) {
         const data = await res.json();

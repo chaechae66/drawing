@@ -29,7 +29,7 @@ export default function Detail() {
   } = useQuery({
     queryKey: ["article", id],
     queryFn: async (): Promise<TList> => {
-      return fetch(`http://localhost:3000/api/article/${id}`, {
+      return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}article/${id}`, {
         method: "GET",
       })
         .then((data) => data.json())
@@ -41,7 +41,7 @@ export default function Detail() {
     queryKey: ["article", "like", uuid, id],
     queryFn: async () => {
       return fetchWithInterceptors<Tlike>(
-        `http://localhost:3000/api/article/like?id=${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/like?id=${id}`,
         {
           method: "GET",
         },
@@ -60,7 +60,7 @@ export default function Detail() {
     mutationKey: ["article", "like", uuid, id],
     mutationFn: (): Promise<Response> =>
       fetchWithInterceptors<Tlike>(
-        `http://localhost:3000/api/article/like?id=${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/like?id=${id}`,
         {
           method: "POST",
           body: null,
@@ -80,7 +80,7 @@ export default function Detail() {
     mutationKey: ["article", "put"],
     mutationFn: (formData: FormData): Promise<Response> =>
       fetchWithInterceptors(
-        `http://localhost:3000/api/article/${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/${id}`,
         {
           method: "PUT",
           body: formData,
@@ -98,7 +98,7 @@ export default function Detail() {
     mutationKey: ["article", "delete"],
     mutationFn: (): Promise<Response> =>
       fetchWithInterceptors(
-        `http://localhost:3000/api/article/${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/${id}`,
         { method: "DELETE" },
         store
       ),
@@ -129,7 +129,7 @@ export default function Detail() {
     mutationKey: ["article", "comment", id],
     mutationFn: (): Promise<Response> =>
       fetchWithInterceptors(
-        `http://localhost:3000/api/article/${id}/comment`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/${id}/comment`,
         { method: "POST", body: JSON.stringify(comment) },
         store
       ),
@@ -146,7 +146,7 @@ export default function Detail() {
   const { data: comments, error: commentError } = useQuery({
     queryKey: ["article", "comment", id],
     queryFn: async (): Promise<TComment[]> => {
-      return fetch(`http://localhost:3000/api/article/${id}/comment`)
+      return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}article/${id}/comment`)
         .then((data) => {
           return data.json();
         })

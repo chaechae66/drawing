@@ -10,7 +10,7 @@ function List() {
     queryFn: async (): Promise<AxiosResponse> => {
       const {
         data: { data },
-      } = await axios.get("http://localhost:3000/api/article");
+      } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}article`);
 
       return data.sort(
         (a: TList, b: TList) => Date.parse(b.regDate) - Date.parse(a.regDate)

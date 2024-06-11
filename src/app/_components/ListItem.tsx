@@ -16,7 +16,7 @@ function ListItem({ elem }: { elem: TList }) {
     mutationKey: ["article", "like", uuid, elem._id],
     mutationFn: (): Promise<Response> =>
       fetchWithInterceptors<Tlike>(
-        `http://localhost:3000/api/article/like?id=${elem._id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/like?id=${elem._id}`,
         {
           method: "POST",
           body: null,
@@ -34,7 +34,7 @@ function ListItem({ elem }: { elem: TList }) {
     queryKey: ["article", "like", uuid, elem._id],
     queryFn: async () => {
       return fetchWithInterceptors<Tlike>(
-        `http://localhost:3000/api/article/like?id=${elem._id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/like?id=${elem._id}`,
         {
           method: "GET",
         },

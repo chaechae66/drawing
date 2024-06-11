@@ -33,7 +33,7 @@ function AddDrawing() {
     mutationKey: ["article"],
     mutationFn: (formData: FormData): Promise<Response> =>
       fetchWithInterceptors<TList>(
-        "http://localhost:3000/api/article",
+        `${process.env.NEXT_PUBLIC_BASE_URL}article`,
         {
           method: "POST",
           body: formData,

@@ -66,7 +66,7 @@ function Auth() {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
-    fetch("http://localhost:3000/api/user/signup", {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}user/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -94,7 +94,7 @@ function Auth() {
       alert("빈 항목들을 채워주세요");
       return;
     }
-    fetch("http://localhost:3000/api/user/login", {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}user/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
