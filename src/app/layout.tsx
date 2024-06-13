@@ -1,8 +1,17 @@
 import Header from "./_components/Header";
 import Providers from "./_components/Providers";
 import UUIDProvider from "./_components/UUIDProvider";
+import { Noto_Sans_KR } from "next/font/google";
 
 import "./global.css";
+
+const notoSans = Noto_Sans_KR({ subsets: ["latin"], weight: ["400"] });
+
+export const metadata = {
+  icons: {
+    icon: "/favicon.ico",
+  },
+};
 
 export default function RootLayout({
   children,
@@ -10,13 +19,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={notoSans.className}>
       <head>
         <meta charSet="UTF-8" />
-        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>My App</title>
-        <meta name="drawing" content="그림을 공유하는 사이트" />
+        <meta name="title" content="Drawing" />
+        <meta
+          name="description"
+          content="자신의 그림을 공유하고 좋아요와 댓글을 통해 소통하는 웹사이트 입니다."
+        />
+        <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+        <title>Drawimg</title>
       </head>
       <body>
         <Providers>
