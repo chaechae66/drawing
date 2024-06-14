@@ -23,6 +23,7 @@ export interface TComment {
     nickname: string;
     _id: string;
   };
+  articleID: string;
 }
 
 export interface Tlike {

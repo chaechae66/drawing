@@ -1,33 +1,93 @@
-import { useNavigate, useParams } from "react-router-dom";
-import HomeBtn from "../components/HomeBtn";
-import axios, { AxiosResponse } from "axios";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { TComment, TList } from "../types/List";
-import { FormEventHandler, useRef, useState } from "react";
-import CommentItem from "../components/CommentItem";
-import { useSelector } from "react-redux";
-import { RootState, store } from "../store/store";
-import { setupAxiosInstance } from "../lib/headerInstance";
-import { Button } from "@/components/ui/button";
-import { Heart, MailWarning, MessageSquare } from "lucide-react";
-import { Input } from "@/components/ui/input";
+"use client";
 
-function Detail() {
-  const { id } = useParams();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
+import { Button } from "../../../@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Heart, MailWarning, MessageSquare } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { TComment, TList, Tlike } from "src/types/List";
+import HomeBtn from "./HomeBtn";
+import { useSelector } from "react-redux";
+import { RootState, store } from "src/store/store";
+import fetchWithInterceptors from "src/lib/fetchWithInterceptors";
+import { FormEventHandler, useRef, useState } from "react";
+import { Input } from "../../../@/components/ui/input";
+import CommentItem from "./CommentItem";
+import Image from "next/image";
+
+export default function Detail() {
+  const router = useRouter();
   const loginUser = useSelector((state: RootState) => state.user);
   const uuid = useSelector((state: RootState) => state.uuid.uuid);
-
+  const queryClient = useQueryClient();
   const imageRef = useRef<HTMLInputElement | null>(null);
   const [comment, setComment] = useState("");
+  const { id } = useParams() as { id: string };
+
+  const {
+    data: detail,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["article", id],
+    queryFn: async (): Promise<TList> => {
+      return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}article/${id}`, {
+        method: "GET",
+      })
+        .then((data) => data.json())
+        .then((data) => data.data);
+    },
+  });
+
+  const { data: isLike, error: likeError } = useQuery({
+    queryKey: ["article", "like", uuid, id],
+    queryFn: async () => {
+      return fetchWithInterceptors<Tlike>(
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/like?id=${id}`,
+        {
+          method: "GET",
+        },
+        store
+      ).then(({ data }) => {
+        if (data) {
+          return data.isLike;
+        } else {
+          return false;
+        }
+      });
+    },
+  });
+
+  const { mutate: likeMutate, error: likeMutateError } = useMutation({
+    mutationKey: ["article", "like", uuid, id],
+    mutationFn: (): Promise<Response> =>
+      fetchWithInterceptors<Tlike>(
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/like?id=${id}`,
+        {
+          method: "POST",
+          body: null,
+        },
+        store
+      ),
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ["article", "like", uuid, id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["article", id] });
+      queryClient.invalidateQueries({ queryKey: ["article"] });
+    },
+  });
 
   const { mutate } = useMutation({
     mutationKey: ["article", "put"],
-    mutationFn: (formData: FormData): Promise<AxiosResponse> =>
-      setupAxiosInstance(store).post(
-        `https://dradndn.site/article/${id}`,
-        formData
+    mutationFn: (formData: FormData): Promise<Response> =>
+      fetchWithInterceptors(
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/${id}`,
+        {
+          method: "PUT",
+          body: formData,
+          next: { revalidate: 0 },
+        },
+        store
       ),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article", id] });
@@ -37,8 +97,12 @@ function Detail() {
 
   const { mutate: delMutate } = useMutation({
     mutationKey: ["article", "delete"],
-    mutationFn: (): Promise<AxiosResponse> =>
-      setupAxiosInstance(store).delete(`https://dradndn.site/article/${id}`),
+    mutationFn: (): Promise<Response> =>
+      fetchWithInterceptors(
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/${id}`,
+        { method: "DELETE" },
+        store
+      ),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ["article"] });
     },
@@ -62,51 +126,32 @@ function Detail() {
     imageRef.current!.click();
   };
 
-  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    const isDelete = confirm("이미지를 정말로 삭제하시겠어요?");
-    if (!isDelete) {
-      return;
-    }
-    delMutate();
-    alert("삭제가 완료되었습니다.");
-    navigate("/");
-  };
-
-  const {
-    data: detail,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["article", id],
-    queryFn: async (): Promise<TList> => {
-      return axios
-        .get(`https://dradndn.site/article/${id}`)
-        .then((data) => data.data.data);
-    },
-  });
-
-  const { data: isLike, error: likeError } = useQuery({
-    queryKey: ["article", "like", uuid, id],
-    queryFn: async (): Promise<TList> => {
-      return setupAxiosInstance(store)
-        .get(`https://dradndn.site/article/${id}/like`)
-        .then(({ data }) => {
-          if (data) {
-            return data.isLike;
-          } else {
-            return false;
-          }
-        });
+  const { mutate: commentMutate, error: commentMutateError } = useMutation({
+    mutationKey: ["article", "comment", id],
+    mutationFn: (): Promise<Response> =>
+      fetchWithInterceptors(
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/${id}/comment`,
+        { method: "POST", body: JSON.stringify(comment) },
+        store
+      ),
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ["article", "comment", id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["article", id] });
+      queryClient.invalidateQueries({ queryKey: ["article"] });
+      setComment("");
     },
   });
 
   const { data: comments, error: commentError } = useQuery({
     queryKey: ["article", "comment", id],
     queryFn: async (): Promise<TComment[]> => {
-      return axios
-        .get(`https://dradndn.site/article/${id}/comment`)
-        .then(({ data: { data } }) => {
+      return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}article/${id}/comment`)
+        .then((data) => {
+          return data.json();
+        })
+        .then(({ data }) => {
           if (data) {
             return data.sort(
               (a: TList, b: TList) =>
@@ -116,41 +161,6 @@ function Detail() {
             return null;
           }
         });
-    },
-  });
-
-  const { mutate: likeMutate, error: likeMutateError } = useMutation({
-    mutationKey: ["article", "like", uuid, id],
-    mutationFn: (): Promise<AxiosResponse> =>
-      setupAxiosInstance(store).post(
-        `https://dradndn.site/article/${id}/like`,
-        {}
-      ),
-    onSuccess() {
-      queryClient.invalidateQueries({
-        queryKey: ["article", "like", uuid, id],
-      });
-      queryClient.invalidateQueries({ queryKey: ["article", id] });
-      queryClient.invalidateQueries({ queryKey: ["article"] });
-    },
-  });
-
-  const { mutate: commentMutate, error: commentMutateError } = useMutation({
-    mutationKey: ["article", "comment", id],
-    mutationFn: (): Promise<AxiosResponse> =>
-      setupAxiosInstance(store).post(
-        `https://dradndn.site/article/${id}/comment`,
-        {
-          comment,
-        }
-      ),
-    onSuccess() {
-      queryClient.invalidateQueries({
-        queryKey: ["article", "comment", id],
-      });
-      queryClient.invalidateQueries({ queryKey: ["article", id] });
-      queryClient.invalidateQueries({ queryKey: ["article"] });
-      setComment("");
     },
   });
 
@@ -179,7 +189,7 @@ function Detail() {
           <Button
             variant="outline"
             onClick={() => {
-              navigate(-1);
+              router.back();
             }}
           >
             이전으로
@@ -204,13 +214,24 @@ function Detail() {
     likeMutate();
   };
 
+  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const isDelete = confirm("이미지를 정말로 삭제하시겠어요?");
+    if (!isDelete) {
+      return;
+    }
+    delMutate();
+    alert("삭제가 완료되었습니다.");
+    router.push("/");
+  };
+
   const onCommentSubmit: FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     commentMutate();
   };
 
   return (
-    <main className="flex justify-center items-center">
+    <main className="flex justify-center items-center w-dvw">
       <div className="flex flex-col p-6 w-[500px] mb-8">
         {detail ? (
           <>
@@ -242,8 +263,11 @@ function Detail() {
                 )}
               </div>
             </div>
-            <img
-              className="w-[500px] h-[500px] object-cover border-[1px] border-solid border-gray-200 max-sm:h-[400px]"
+            <Image
+              width={500}
+              height={500}
+              sizes="(max-width: 500px) 100vw, 100vw"
+              className="w-[500px] h-[500px] object-cover border-[1px] border-solid border-gray-200"
               src={`data:image/${detail.contentType};base64,${detail.data}`}
               alt="그림 이미지"
             />
@@ -297,5 +321,3 @@ function Detail() {
     </main>
   );
 }
-
-export default Detail;

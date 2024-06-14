@@ -1,12 +1,18 @@
-import { useNavigate, useRouteError } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+"use client";
+import { useEffect } from "react";
+import { Button } from "../../@/components/ui/button";
 import { MailWarning } from "lucide-react";
 
-export default function ErrorPage() {
-  const error = useRouteError();
-  const navigate = useNavigate();
-  console.error(error);
-
+export default function ErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
   return (
     <main className="w-dvw h-dvh flex items-center justify-center">
       <div className="flex flex-col text-center items-center">
@@ -26,7 +32,7 @@ export default function ErrorPage() {
         <Button
           variant="outline"
           onClick={() => {
-            navigate(-1);
+            reset();
           }}
         >
           이전으로

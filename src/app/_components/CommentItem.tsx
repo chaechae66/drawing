@@ -1,13 +1,13 @@
+"use client";
+
 import { FormEventHandler, useState } from "react";
-import { TComment } from "../types/List";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
-import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { RootState, store } from "../store/store";
-import { setupAxiosInstance } from "../lib/headerInstance";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { TComment } from "src/types/List";
+import { RootState, store } from "src/store/store";
+import { Button } from "../../../@/components/ui/button";
+import { Input } from "../../../@/components/ui/input";
+import fetchWithInterceptors from "src/lib/fetchWithInterceptors";
 
 interface Props {
   item: TComment;
@@ -19,37 +19,46 @@ function CommentItem({ item }: Props) {
 
   const [commentMode, setCommentMode] = useState(false);
   const [comment, setComment] = useState("");
-  const { id } = useParams();
   const queryClient = useQueryClient();
 
   const { mutate: commentMutate, error: commentMutateError } = useMutation({
     mutationKey: ["article", "comment", item._id],
-    mutationFn: (): Promise<AxiosResponse> => {
-      return setupAxiosInstance(store).put(
-        `https://dradndn.site/article/comment/${item._id}`,
+    mutationFn: (): Promise<Response> => {
+      return fetchWithInterceptors(
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/${item.articleID}/comment/${item._id}`,
         {
-          comment,
-        }
+          method: "PUT",
+          body: JSON.stringify(comment),
+        },
+        store
       );
     },
     onSuccess() {
       queryClient.invalidateQueries({
-        queryKey: ["article", id],
+        queryKey: ["article", item.articleID],
       });
-      queryClient.invalidateQueries({ queryKey: ["article", "comment", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["article", "comment", item.articleID],
+      });
       setCommentMode(false);
     },
   });
 
   const { mutate: delMutate, error: delMutateError } = useMutation({
-    mutationKey: ["article", "comment", "delete", id],
-    mutationFn: (): Promise<AxiosResponse> =>
-      setupAxiosInstance(store).delete(
-        `https://dradndn.site/article/${id}/comment/${item._id}`
+    mutationKey: ["article", "comment", "delete", item.articleID],
+    mutationFn: (): Promise<Response> =>
+      fetchWithInterceptors(
+        `${process.env.NEXT_PUBLIC_BASE_URL}article/${item.articleID}/comment/${item._id}`,
+        {
+          method: "DELETE",
+        },
+        store
       ),
     onSuccess() {
-      queryClient.invalidateQueries({ queryKey: ["article", "comment", id] });
-      queryClient.invalidateQueries({ queryKey: ["article", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["article", "comment", item.articleID],
+      });
+      queryClient.invalidateQueries({ queryKey: ["article", item.articleID] });
     },
   });
 

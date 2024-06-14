@@ -1,4 +1,11 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+"use client";
+
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../../@/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -6,18 +13,17 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import HomeBtn from "../components/HomeBtn";
+} from "../../../@/components/ui/card";
+import { Input } from "../../../@/components/ui/input";
+import { Label } from "../../../@/components/ui/label";
+import { Button } from "../../../@/components/ui/button";
+import HomeBtn from "./HomeBtn";
 import { ChangeEventHandler, FormEventHandler, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { saveToken } from "../store/features/token/tokenSlice";
-import { setUser } from "../store/features/user/userSlice";
+import { RootState } from "src/store/store";
+import { saveToken } from "src/store/features/token/tokenSlice";
+import { setUser } from "src/store/features/user/userSlice";
+import { useRouter } from "next/navigation";
 
 function Auth() {
   const [loginUserInfo, setLoginUserInfo] = useState({ id: "", password: "" });
@@ -29,8 +35,7 @@ function Auth() {
   });
   const dispatch = useDispatch();
   const token = useSelector((state: RootState) => state.token);
-  const navigate = useNavigate();
-
+  const router = useRouter();
   const onLoginChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     e.preventDefault();
     setLoginUserInfo({
@@ -61,8 +66,13 @@ function Auth() {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
-    axios
-      .post(`https://dradndn.site/user/signup`, signupUserInfo)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}user/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(signupUserInfo),
+    })
       .then(() => {
         setSignupUserInfo({
           id: "",
@@ -73,10 +83,6 @@ function Auth() {
         alert("회원가입이 완료되었습니다. 로그인해주세요");
       })
       .catch((err) => {
-        if (err.response.data.message) {
-          alert(err.response.data.message);
-          return;
-        }
         alert("회원가입에 실패하였습니다.");
         console.error(err);
       });
@@ -88,8 +94,14 @@ function Auth() {
       alert("빈 항목들을 채워주세요");
       return;
     }
-    axios
-      .post(`https://dradndn.site/user/login`, loginUserInfo)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}user/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(loginUserInfo),
+    })
+      .then((res) => res.json())
       .then((res) => {
         if (token.accessToken || token.refreshToken || token.expiredAt) {
           alert("이미 로그인된 상태입니다.");
@@ -104,7 +116,7 @@ function Auth() {
 
         dispatch(saveToken(savedToken));
         dispatch(setUser({ id: res.data.id, nickname: res.data.nickname }));
-        navigate("/");
+        router.push("/");
       })
       .catch((err) => {
         if (err.response.data.message) {
@@ -116,7 +128,7 @@ function Auth() {
       });
   };
   return (
-    <main className="w-dvw h-dvh flex items-center justify-center p-6">
+    <main className="w-dvw h-full flex items-center justify-center p-6">
       <Tabs defaultValue="signin" className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signin">로그인</TabsTrigger>
@@ -134,7 +146,12 @@ function Auth() {
               <CardContent className="space-y-2">
                 <div className="space-y-1">
                   <Label htmlFor="id">아이디</Label>
-                  <Input id="id" onChange={onLoginChange} name="id" />
+                  <Input
+                    id="id"
+                    onChange={onLoginChange}
+                    name="id"
+                    autoComplete="username"
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="password">비밀번호</Label>
@@ -143,6 +160,7 @@ function Auth() {
                     type="password"
                     onChange={onLoginChange}
                     name="password"
+                    autoComplete="current-password"
                   />
                 </div>
               </CardContent>
@@ -170,6 +188,7 @@ function Auth() {
                     onChange={onSignupChange}
                     name="id"
                     value={signupUserInfo.id}
+                    autoComplete="username"
                   />
                 </div>
                 <div className="space-y-1">
@@ -179,6 +198,7 @@ function Auth() {
                     onChange={onSignupChange}
                     name="password"
                     type="password"
+                    autoComplete="new-password"
                     value={signupUserInfo.password}
                   />
                 </div>
@@ -189,6 +209,7 @@ function Auth() {
                     onChange={onSignupChange}
                     name="passwordCheck"
                     type="password"
+                    autoComplete="new-password"
                     value={signupUserInfo.passwordCheck}
                   />
                 </div>
