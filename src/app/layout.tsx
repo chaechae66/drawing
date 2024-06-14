@@ -7,6 +7,7 @@ import "./global.css";
 
 const notoSans = Noto_Sans_KR({ subsets: ["latin"], weight: ["400"] });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const metadata = {
   icons: {
     icon: "/favicon.ico",
