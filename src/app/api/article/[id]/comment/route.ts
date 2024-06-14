@@ -7,7 +7,7 @@ import User from "../../../_model/user";
 import Article from "../../../_model/article";
 
 export async function GET(
-  req: NextRequest,
+  _: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const { id: imgId } = params;

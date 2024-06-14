@@ -7,7 +7,7 @@ import { ObjectId } from "mongodb";
 import Comment from "../../_model/comment";
 
 export async function GET(
-  req: NextRequest,
+  _: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const { id: imgId } = params;
@@ -153,7 +153,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const { id: imgId } = params;

@@ -113,7 +113,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _: NextRequest,
   { params }: { params: { id: string; comment: string } }
 ) {
   const { id: imgId, comment: commentId } = params;
